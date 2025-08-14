@@ -1,5 +1,6 @@
+LIBS = -lncurses
 # Edited for Debian GNU/Linux.
-DESTDIR =
+DESTDIR = $(HOME)
 
 # DEBIAN NOTE: This file diverges significantly from the original Makefile
 #   for obvious reasons.  The original Makefile is Makefile.unix and should
@@ -16,12 +17,6 @@ DESTDIR =
 # Edited for Debian GNU/Linux: LIBVARDIR is where the score file is kept
 # OWNER is who you want the game to be chown to.
 # GROUP is who you wnat the game to be chgrp to.
-BINDIR = $(DESTDIR)/usr/games
-ETCDIR = $(DESTDIR)/etc
-LIBSTATICDIR = $(DESTDIR)/usr/lib/games/moria
-LIBVARDIR = $(DESTDIR)/var/games/moria
-OWNER = root
-GROUP = games
 
 # For testing and debugging the program, it is best to use this line.
 # CFLAGS = -g
@@ -46,7 +41,8 @@ CURSES = -lcurses
 # Normal systems don't require anything here.
 LFLAGS = 
 
-CC = cc
+CC = gcc
+CFLAGS = -O2 -Wall -std=gnu89 -Wno-implicit-function-declaration -Wno-int-conversion 
 
 SRCS = main.c misc1.c misc2.c misc3.c misc4.c store1.c files.c io.c \
 	create.c desc.c generate.c sets.c dungeon.c creature.c death.c \
@@ -80,27 +76,14 @@ TAGS : $(SRCS)
 # you must define BINDIR and LIBDIR before installing
 # assumes that BINDIR and LIBDIR exist
 install:
-	chmod 755 $(BINDIR)
-	cp moria $(BINDIR)
-	chown $(OWNER) $(BINDIR)/moria
-	chgrp $(GROUP) $(BINDIR)/moria
-	chmod 2755 $(BINDIR)/moria
-	chmod 755 $(LIBSTATICDIR)
-	# No longer chmod 755 $(LIBVARDIR)
-	(cd files; cp $(LIBSTATICFILES) $(LIBSTATICDIR))
-	(cd $(LIBSTATICDIR); chmod 444 $(LIBSTATICFILES))
-	# No longer (cd $(LIBVARDIR); touch scores; chmod 664 scores)
-	# No longer (cd $(LIBVARDIR); chown $(OWNER) . scores; chgrp $(GROUP) . scores)
-	(cd files; cp hours $(ETCDIR)/moria-hours)
-	chmod 644 $(ETCDIR)/moria-hours
-	(cd $(LIBSTATICDIR); chown $(OWNER) $(LIBSTATICFILES))
-	(cd $(LIBSTATICDIR); chgrp $(GROUP) $(LIBSTATICFILES))
-# If you are short on disk space, or aren't interested in debugging moria.
-	# This is handled by dh_strip, so let's not override its' decision.
-	# strip $(BINDIR)/moria
+	echo "Work in Progress"
 
 clean:
 	rm -r *.o
+	mv unix.c DONOTDELETE
+	rm -r *.c
+	rm -r *.h
+	mv DONOTDELETE unix.c
 	rm -f moria
 
 create.o: constant.h types.h externs.h config.h
