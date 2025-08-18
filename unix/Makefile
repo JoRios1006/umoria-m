@@ -1,4 +1,9 @@
 LIBS = -lncurses
+ETCDIR = $(DESTDIR)/etc
+BIN="$(HOME)/.local/bin"
+LIB="$(HOME)/.local/share/moria"
+LIBSTATICDIR = $(DESTDIR)/usr/lib/games/moria
+LIBVARDIR = $(DESTDIR)/var/games/moria
 # Edited for Debian GNU/Linux.
 DESTDIR = $(HOME)
 
@@ -75,16 +80,46 @@ TAGS : $(SRCS)
 
 # you must define BINDIR and LIBDIR before installing
 # assumes that BINDIR and LIBDIR exist
-install:
-	echo "Work in Progress"
+install: $(BINARY)
+	@echo "Installing $(BINARY) to $(BINDIR)"
+	$(INSTALL) -d "$(BINDIR)" "$(LIBDIR)"
+	# binary
+	$(INSTALL) -m 0755 "$(BINARY)" "$(BINDIR)/$(BINARY)"
+	# game data (copy whatever exists in files/)
+	if [ -d files ]; then cp -af files/* "$(LIBDIR)/"; fi
+	# ensure required runtime files exist with correct modes
+	: >"$(LIBDIR)/scores"
+	chmod 0644 "$(LIBDIR)/scores"
+	[ -e "$(LIBDIR)/hours" ] || : >"$(LIBDIR)/hours"
+	[ -e "$(LIBDIR)/news" ]  || : >"$(LIBDIR)/news"
+	chmod 0444 "$(LIBDIR)/hours" "$(LIBDIR)/news"
+	@echo "Installed binary -> $(BINDIR)/$(BINARY)"
+	@echo "Installed data   -> $(LIBDIR)"
+
+.PHONY: help
+help:
+	@echo "UMoria Makefile targets:"
+	@echo "  make           - Build the game binary"
+	@echo "  make clean     - Remove all built objects and the binary"
+	@echo "  make gitclean  - (READY FOR COMMIT) Remove all built objects and the binary"
+	@echo "  make install   - Install locally to \$$BINDIR (default: \$$HOME/.local/bin)"
+	@echo "                   and copy game data to \$$LIBDIR (default: \$$HOME/.local/share/moria)"
+	@echo "  make run       - Run the game from the installed location"
+	@echo "  make help      - Show this help message"
+	@echo ""
+	@echo "Variables:"
+	@echo "  BINDIR         - Installation directory for the binary (default: \$$HOME/.local/bin)"
+	@echo "  LIBDIR         - Installation directory for game data (default: \$$HOME/.local/share/moria)"
 
 clean:
 	rm -r *.o
+	rm -f moria
+
+gitclean:
 	mv unix.c DONOTDELETE
 	rm -r *.c
 	rm -r *.h
 	mv DONOTDELETE unix.c
-	rm -f moria
 
 create.o: constant.h types.h externs.h config.h
 creature.o: constant.h types.h externs.h config.h
