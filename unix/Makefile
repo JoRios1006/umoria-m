@@ -1,163 +1,131 @@
-LIBS = -lncurses
-ETCDIR = $(DESTDIR)/etc
-BIN="$(HOME)/.local/bin"
-LIB="$(HOME)/.local/share/moria"
-LIBSTATICDIR = $(DESTDIR)/usr/lib/games/moria
-LIBVARDIR = $(DESTDIR)/var/games/moria
-# Edited for Debian GNU/Linux.
-DESTDIR = $(HOME)
+# UMoria portable Makefile (no sudo, user-agnostic)
+# -------------------------------------------------
+# Usage:
+#   make
+#   make install              # installs to ~/.local (or override BINDIR/LIBDIR)
+#   make run
+#   make uninstall
+#   make help / make doctor
 
-# DEBIAN NOTE: This file diverges significantly from the original Makefile
-#   for obvious reasons.  The original Makefile is Makefile.unix and should
-#   be used on non-Linux systems.
+# ---- Config (override on command line if you want) ----
+BINARY   ?= moria
+CC       ?= gcc
+CFLAGS   ?= -O2 -Wall -std=gnu89 -Wno-implicit-function-declaration -Wno-int-conversion
+LDLIBS   ?= -lncurses
+# Locate the bundled data directory robustly (repo root or parent)
+FILES_DIR ?= $(firstword $(wildcard files ../files))
 
+# Install locations (user-agnostic, no sudo)
+PREFIX   ?= $(HOME)/.local
+BINDIR   ?= $(PREFIX)/bin
 
-# BINDIR is the directory where the moria binary while be put
-# LIBDIR is where the other files (score, news, hours) will be put
-# LIBDIR must be the same directory defined in config.h
-# Edited for Debian GNU/Linux: Next 4 lines are for the FHS
-# Edited for Debian GNU/Linux: LIBDIR is retired
-# Edited for Debian GNU/Linux: ETCDIR is where the hours file is kept
-# Edited for Debian GNU/Linux: LIBSTATICDIR is where help files are kept
-# Edited for Debian GNU/Linux: LIBVARDIR is where the score file is kept
-# OWNER is who you want the game to be chown to.
-# GROUP is who you wnat the game to be chgrp to.
-
-# For testing and debugging the program, it is best to use this line.
-# CFLAGS = -g
-# For playing the game, you may want to use this line
-CFLAGS = -O2
-
-# Debian GNU/Linux addition
-ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
-CFLAGS += -g
+# Prefer XDG if present, else ~/.local/share/moria
+ifeq ($(XDG_DATA_HOME),)
+  LIBDIR ?= $(HOME)/.local/share/moria
+else
+  LIBDIR ?= $(XDG_DATA_HOME)/moria
 endif
 
-# For BSD Systems
-# CURSES = -lcurses -ltermcap
-# For SYS V Systems
-CURSES = -lcurses
-# For XENIX, some XENIX systems may need -ltinfo
-# CURSES = -ltcap -ltermcap -lx
+# Inject the runtime data dir at compile time and override legacy macros
+CPPFLAGS ?= -DLIBDIR=\"$(LIBDIR)\" -include local_paths.h
 
-# For AIX systems, compiling in the BSD world; SYS_V must not be defined in
-# config.h if you use this.
-#LFLAGS = -lbsd
-# Normal systems don't require anything here.
-LFLAGS = 
+# ---- Sources / Objects ----
+SRCS := $(wildcard *.c)
+OBJS := $(SRCS:.c=.o)
 
-CC = gcc
-CFLAGS = -O2 -Wall -std=gnu89 -Wno-implicit-function-declaration -Wno-int-conversion 
+# ---- Phony targets ----
+.PHONY: all clean install uninstall run help doctor
 
-SRCS = main.c misc1.c misc2.c misc3.c misc4.c store1.c files.c io.c \
-	create.c desc.c generate.c sets.c dungeon.c creature.c death.c \
-	eat.c help.c magic.c potions.c prayer.c save.c staffs.c wands.c \
-	scrolls.c spells.c wizard.c store2.c signals.c moria1.c moria2.c \
-	moria3.c moria4.c monsters.c treasure.c variable.c rnd.c recall.c \
-	unix.c player.c tables.c
+# ---- Build ----
+all: $(BINARY)
 
-OBJS = main.o misc1.o misc2.o misc3.o misc4.o store1.o files.o io.o \
-	create.o desc.o generate.o sets.o dungeon.o creature.o death.o \
-	eat.o help.o magic.o potions.o prayer.o save.o staffs.o wands.o \
-	scrolls.o spells.o wizard.o store2.o signals.o moria1.o moria2.o \
-	moria3.o moria4.o monsters.o treasure.o variable.o rnd.o recall.o \
-	unix.o player.o tables.o
+$(BINARY): $(OBJS)
+	$(CC) -o $@ $^ $(LDLIBS)
 
-LIBSTATICFILES = news origcmds.hlp owizcmds.hlp roglcmds.hlp rwizcmds.hlp \
-	version.hlp welcome.hlp
+%.o: %.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
-moria : $(OBJS)
-	$(CC) -o moria $(CFLAGS) $(OBJS) $(CURSES) $(LFLAGS)
-
-lintout : $(SRCS)
-	lint $(SRCS) $(CURSES) > lintout
-
-lintout2 : $(SRCS)
-	lint -bach $(SRCS) $(CURSES) > lintout
-
-TAGS : $(SRCS)
-	ctags -x $(SRCS) > TAGS
-
-# you must define BINDIR and LIBDIR before installing
-# assumes that BINDIR and LIBDIR exist
+# ---- Install (no sudo, no chown, no set[ug]id) ----
+# Idempotent and robust: makes dirs writable during copy, then sets final perms.
 install: $(BINARY)
-	@echo "Installing $(BINARY) to $(BINDIR)"
-	$(INSTALL) -d "$(BINDIR)" "$(LIBDIR)"
-	# binary
-	$(INSTALL) -m 0755 "$(BINARY)" "$(BINDIR)/$(BINARY)"
-	# game data (copy whatever exists in files/)
-	if [ -d files ]; then cp -af files/* "$(LIBDIR)/"; fi
-	# ensure required runtime files exist with correct modes
+	@echo "Installing $(BINARY) -> $(BINDIR)"
+	@echo "Installing data      -> $(LIBDIR)"
+	# 1) Create dirs with sane perms
+	mkdir -p "$(BINDIR)" "$(LIBDIR)"
+	chmod 755 "$(BINDIR)" "$(LIBDIR)"
+	# 2) Install binary, ensure no setuid/setgid bits
+	install -m 0755 "$(BINARY)" "$(BINDIR)/$(BINARY)"
+	chmod a-s "$(BINDIR)/$(BINARY)" || true
+	# 3) Copy bundled data if present (works from repo root or unix/)
+	if [ -n "$(FILES_DIR)" ] && [ -d "$(FILES_DIR)" ]; then \
+  	chmod u+w "$(LIBDIR)"; \
+  	cp -af "$(FILES_DIR)"/. "$(LIBDIR)/"; \
+	fi
+	# 4) Ensure runtime files exist (scores is writable, others readonly)
 	: >"$(LIBDIR)/scores"
-	chmod 0644 "$(LIBDIR)/scores"
 	[ -e "$(LIBDIR)/hours" ] || : >"$(LIBDIR)/hours"
-	[ -e "$(LIBDIR)/news" ]  || : >"$(LIBDIR)/news"
-	chmod 0444 "$(LIBDIR)/hours" "$(LIBDIR)/news"
-	@echo "Installed binary -> $(BINDIR)/$(BINARY)"
-	@echo "Installed data   -> $(LIBDIR)"
+	[ -e "$(LIBDIR)/news"  ] || : >"$(LIBDIR)/news"
+	chmod 644 "$(LIBDIR)/scores"
+	chmod 444 "$(LIBDIR)/hours" "$(LIBDIR)/news" 2>/dev/null || true
+	# 5) Static help/docs read-only if present
+	chmod 444 $(LIBDIR)/*.hlp $(LIBDIR)/COPYING 2>/dev/null || true
+	@echo "OK."
 
-.PHONY: help
+# ---- Uninstall everything installed by this Makefile ----
+uninstall:
+	@echo "Removing $(BINDIR)/$(BINARY) (if present)"
+	rm -f "$(BINDIR)/$(BINARY)"
+	@echo "Removing data dir $(LIBDIR)"
+	rm -rf "$(LIBDIR)"
+	@echo "Uninstall complete."
+
+# ---- Run the installed game ----
+run:
+	@if [ -x "$(BINDIR)/$(BINARY)" ]; then \
+	  exec "$(BINDIR)/$(BINARY)"; \
+	else \
+	  echo "Binary not found at $(BINDIR)/$(BINARY). Run 'make install' first."; \
+	  exit 1; \
+	fi
+
+# ---- Cleanup ----
+clean:
+	rm -f $(OBJS) $(BINARY)
+
+# ---- Help ----
 help:
 	@echo "UMoria Makefile targets:"
 	@echo "  make           - Build the game binary"
-	@echo "  make clean     - Remove all built objects and the binary"
-	@echo "  make gitclean  - (READY FOR COMMIT) Remove all built objects and the binary"
 	@echo "  make install   - Install locally to \$$BINDIR (default: \$$HOME/.local/bin)"
-	@echo "                   and copy game data to \$$LIBDIR (default: \$$HOME/.local/share/moria)"
-	@echo "  make run       - Run the game from the installed location"
-	@echo "  make help      - Show this help message"
+	@echo "                   and copy game data to \$$LIBDIR (default: XDG_DATA_HOME/moria or \$$HOME/.local/share/moria)"
+	@echo "  make run       - Run the installed game"
+	@echo "  make uninstall - Remove the installed binary and data"
+	@echo "  make clean     - Remove build artifacts"
+	@echo "  make doctor    - Quick env/path/data check"
 	@echo ""
-	@echo "Variables:"
-	@echo "  BINDIR         - Installation directory for the binary (default: \$$HOME/.local/bin)"
-	@echo "  LIBDIR         - Installation directory for game data (default: \$$HOME/.local/share/moria)"
+	@echo "Variables you can override:"
+	@echo "  BINDIR=/custom/bin    LIBDIR=/custom/data/moria   CFLAGS=...   LDLIBS=..."
 
-clean:
+# ---- Quick sanity checks (paths, libs, data files) ----
+doctor:
+	@echo "== Paths =="; \
+	  command -v $(BINARY) >/dev/null 2>&1 && which $(BINARY) || echo "(not on PATH)"; \
+	  echo "BINDIR=$(BINDIR)"; echo "LIBDIR=$(LIBDIR)"; \
+	 echo "== Binary =="; \
+	  ls -l "$(BINDIR)/$(BINARY)" 2>/dev/null || echo "No binary in BINDIR"; \
+	 echo "== Linked curses =="; \
+	  ldd "$(BINDIR)/$(BINARY)" 2>/dev/null | grep -E 'curses|not found' || true; \
+	 echo "== Data dir =="; \
+	  ls -l "$(LIBDIR)" 2>/dev/null || echo "No data dir"; \
+	 echo "== SGID/SUID on binary (should be off) =="; \
+	  ls -l "$(BINDIR)/$(BINARY)" 2>/dev/null | sed -n '1p' || true
+
+l_clean:
 	rm -r *.o
 	rm -f moria
 
-gitclean:
+l_gitclean:
 	mv unix.c DONOTDELETE
 	rm -r *.c
 	rm -r *.h
 	mv DONOTDELETE unix.c
-
-create.o: constant.h types.h externs.h config.h
-creature.o: constant.h types.h externs.h config.h
-death.o: constant.h types.h externs.h config.h
-desc.o: constant.h types.h externs.h config.h
-dungeon.o: constant.h types.h externs.h config.h
-eat.o: constant.h types.h externs.h config.h
-files.o: constant.h types.h externs.h config.h
-generate.o: constant.h types.h externs.h config.h
-help.o: constant.h types.h externs.h config.h
-io.o: constant.h types.h externs.h config.h
-magic.o: constant.h types.h externs.h config.h
-main.o: constant.h types.h externs.h config.h
-misc1.o: constant.h types.h externs.h config.h
-misc2.o: constant.h types.h externs.h config.h
-misc3.o: constant.h types.h externs.h config.h
-misc4.o: constant.h types.h externs.h config.h
-monsters.o: constant.h types.h config.h
-moria1.o: constant.h types.h externs.h config.h
-moria2.o: constant.h types.h externs.h config.h
-moria3.o: constant.h types.h externs.h config.h
-moria4.o: constant.h types.h externs.h config.h
-player.o: constant.h types.h config.h
-potions.o: constant.h types.h externs.h config.h
-prayer.o: constant.h types.h externs.h config.h
-recall.o: constant.h config.h types.h externs.h
-rnd.o: constant.h types.h
-save.o: constant.h types.h externs.h config.h
-scrolls.o: constant.h types.h externs.h config.h
-sets.o: constant.h config.h
-signals.o: constant.h types.h externs.h config.h
-spells.o: constant.h types.h externs.h config.h
-staffs.o: constant.h types.h externs.h config.h
-store1.o: constant.h types.h externs.h config.h
-store2.o: constant.h types.h externs.h config.h
-tables.o: constant.h types.h config.h
-treasure.o: constant.h types.h config.h
-unix.o: constant.h config.h types.h externs.h
-variable.o: constant.h types.h config.h
-wands.o: constant.h types.h externs.h config.h
-wizard.o: constant.h types.h externs.h config.h

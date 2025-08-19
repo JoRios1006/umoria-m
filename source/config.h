@@ -241,16 +241,16 @@ some of the system defines set up here.
 /* Generic UNIX */
 /* This must be unix; change file names as appropriate.  */
 #define MORIA_SAV	"moria-save"
-#define MORIA_HOU	"/home/dgrabiner/moria-5.6/files/hours"
-#define MORIA_MOR	"/home/dgrabiner/moria-5.6/files/news"
-#define MORIA_GPL	"/home/dgrabiner/moria-5.6/files/COPYING"
-#define MORIA_TOP	"/home/dgrabiner/moria-5.6/files/scores"
-#define MORIA_HELP	"/home/dgrabiner/moria-5.6/files/roglcmds.hlp"
-#define MORIA_ORIG_HELP	"/home/dgrabiner/moria-5.6/files/origcmds.hlp"
-#define MORIA_WIZ_HELP	"/home/dgrabiner/moria-5.6/files/rwizcmds.hlp"
-#define MORIA_OWIZ_HELP	"/home/dgrabiner/moria-5.6/files/owizcmds.hlp"
-#define MORIA_WELCOME	"/home/dgrabiner/moria-5.6/files/welcome.hlp"
-#define MORIA_VER	"/home/dgrabiner/moria-5.6/files/version.hlp"
+#define MORIA_HOU	"/home/jo/.local/share/moria/hours"
+#define MORIA_MOR	"/home/jo/.local/share/moria/news"
+#define MORIA_GPL	"/home/jo/.local/share/moria/COPYING"
+#define MORIA_TOP	"/home/jo/.local/share/moria/scores"
+#define MORIA_HELP	"/home/jo/.local/share/moria/roglcmds.hlp"
+#define MORIA_ORIG_HELP	"/home/jo/.local/share/moria/origcmds.hlp"
+#define MORIA_WIZ_HELP	"/home/jo/.local/share/moria/rwizcmds.hlp"
+#define MORIA_OWIZ_HELP	"/home/jo/.local/share/moria/owizcmds.hlp"
+#define MORIA_WELCOME	"/home/jo/.local/share/moria/welcome.hlp"
+#define MORIA_VER	"/home/jo/.local/share/moria/version.hlp"
 
 #endif
 #endif

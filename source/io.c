@@ -143,6 +143,7 @@ typedef struct { int stuff; } fpvmach;
 #include "constant.h"
 #include "types.h"
 #include "externs.h"
+#include <curses.h>
 
 #if defined(SYS_V) && defined(lint)
 struct screen { int dumb; };
@@ -562,7 +563,9 @@ void restore_term()
   pause_line(15);
 #endif
   /* this moves curses to bottom right corner */
-  mvcur(stdscr->_cury, stdscr->_curx, LINES-1, 0);
+  int y, x;
+  getyx(stdscr, y, x);
+  mvcur(y, x, LINES-1, 0);
   endwin();  /* exit curses */
   (void) fflush (stdout);
 #ifdef MSDOS
