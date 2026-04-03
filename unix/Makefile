@@ -27,7 +27,8 @@ else
 endif
 
 # Inject the runtime data dir at compile time and override legacy macros
-CPPFLAGS ?= -DLIBDIR=\"$(LIBDIR)\" -include local_paths.h
+# Use 'override +=' so this is always appended even if CPPFLAGS is set in the environment
+override CPPFLAGS += -DLIBDIR=\"$(LIBDIR)\" -include local_paths.h
 
 # ---- Sources / Objects ----
 SRCS := $(wildcard *.c)
@@ -58,8 +59,8 @@ install: $(BINARY)
 	chmod a-s "$(BINDIR)/$(BINARY)" || true
 	# 3) Copy bundled data if present (works from repo root or unix/)
 	if [ -n "$(FILES_DIR)" ] && [ -d "$(FILES_DIR)" ]; then \
-  	chmod u+w "$(LIBDIR)"; \
-  	cp -af "$(FILES_DIR)"/. "$(LIBDIR)/"; \
+	  chmod u+w "$(LIBDIR)"; \
+	  cp -af "$(FILES_DIR)"/. "$(LIBDIR)/"; \
 	fi
 	# 4) Ensure runtime files exist (scores is writable, others readonly)
 	: >"$(LIBDIR)/scores"

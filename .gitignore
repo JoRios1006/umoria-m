@@ -1,0 +1,7 @@
+# Build artifacts
+unix/*.o
+unix/moria
+
+# Runtime save files
+moria-save
+.moria-save
