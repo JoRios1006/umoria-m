@@ -1,0 +1,33 @@
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "TERM=xterm-256color /home/runner/.local/bin/moria"
+
+[deployment]
+deploymentTarget = "vm"
+run = ["bash", "-c", "TERM=xterm-256color /home/runner/.local/bin/moria"]
+build = ["bash", "-c", "cd unix && make clean && make && make install"]
