@@ -11,7 +11,7 @@
 BINARY   ?= moria
 CC       ?= gcc
 CFLAGS   ?= -O2 -Wall -std=gnu89 -Wno-implicit-function-declaration -Wno-int-conversion
-LDLIBS   ?= -lncurses
+LDLIBS   ?= -lncurses -ltinfo
 # Locate the bundled data directory robustly (repo root or parent)
 FILES_DIR ?= $(firstword $(wildcard files ../files))
 
