@@ -240,17 +240,38 @@ some of the system defines set up here.
 
 /* Generic UNIX */
 /* This must be unix; change file names as appropriate.  */
+/* Use #ifndef so that local_paths.h (injected via -include) can override */
 #define MORIA_SAV       "moria-save"
-#define MORIA_HOU       "/home/runner/workspace/.local/share/moria/hours"
-#define MORIA_MOR       "/home/runner/workspace/.local/share/moria/news"
-#define MORIA_GPL       "/home/runner/workspace/.local/share/moria/COPYING"
-#define MORIA_TOP       "/home/runner/workspace/.local/share/moria/scores"
-#define MORIA_HELP      "/home/runner/workspace/.local/share/moria/roglcmds.hlp"
-#define MORIA_ORIG_HELP "/home/runner/workspace/.local/share/moria/origcmds.hlp"
-#define MORIA_WIZ_HELP  "/home/runner/workspace/.local/share/moria/rwizcmds.hlp"
-#define MORIA_OWIZ_HELP "/home/runner/workspace/.local/share/moria/owizcmds.hlp"
-#define MORIA_WELCOME   "/home/runner/workspace/.local/share/moria/welcome.hlp"
-#define MORIA_VER       "/home/runner/workspace/.local/share/moria/version.hlp"
+#ifndef MORIA_HOU
+#define MORIA_HOU       "/usr/local/share/moria/hours"
+#endif
+#ifndef MORIA_MOR
+#define MORIA_MOR       "/usr/local/share/moria/news"
+#endif
+#ifndef MORIA_GPL
+#define MORIA_GPL       "/usr/local/share/moria/COPYING"
+#endif
+#ifndef MORIA_TOP
+#define MORIA_TOP       "/usr/local/share/moria/scores"
+#endif
+#ifndef MORIA_HELP
+#define MORIA_HELP      "/usr/local/share/moria/roglcmds.hlp"
+#endif
+#ifndef MORIA_ORIG_HELP
+#define MORIA_ORIG_HELP "/usr/local/share/moria/origcmds.hlp"
+#endif
+#ifndef MORIA_WIZ_HELP
+#define MORIA_WIZ_HELP  "/usr/local/share/moria/rwizcmds.hlp"
+#endif
+#ifndef MORIA_OWIZ_HELP
+#define MORIA_OWIZ_HELP "/usr/local/share/moria/owizcmds.hlp"
+#endif
+#ifndef MORIA_WELCOME
+#define MORIA_WELCOME   "/usr/local/share/moria/welcome.hlp"
+#endif
+#ifndef MORIA_VER
+#define MORIA_VER       "/usr/local/share/moria/version.hlp"
+#endif
 
 #endif
 #endif
