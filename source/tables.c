@@ -23,67 +23,12 @@
 #include "types.h"
 
 #ifdef MORIA_HOU
-/* Operating hours for Moria                            -RAK-   */
-/*       X = Open; . = Closed                                   */
-char  days[7][82] = { "SUN:XXXXXXXXXXXXXXXXXXXXXXXX",
-                    "MON:XXXXXXXX.........XXXXXXX",
-                    "TUE:XXXXXXXX.........XXXXXXX",
-                    "WED:XXXXXXXX.........XXXXXXX",
-                    "THU:XXXXXXXX.........XXXXXXX",
-                    "FRI:XXXXXXXX.........XXXXXXX",
-                    "SAT:XXXXXXXXXXXXXXXXXXXXXXXX" };
 #endif
 
-#ifdef MAC
-store_type *store;
-#else
 store_type store[MAX_STORES];
-#endif
 
 /* Store owners have different characteristics for pricing and haggling*/
 /* Note: Store owners should be added in groups, one for each store    */
-#ifdef MACGAME
-owner_type *owners;
-#else
-owner_type owners[MAX_OWNERS] = {
-{"Erick the Honest       (Human)      General Store",
-          250,  175,  108,    4, 0, 12},
-{"Mauglin the Grumpy     (Dwarf)      Armory"       ,
-        32000,  200,  112,    4, 5,  5},
-{"Arndal Beast-Slayer    (Half-Elf)   Weaponsmith"  ,
-        10000,  185,  110,    5, 1,  8},
-{"Hardblow the Humble    (Human)      Temple"       ,
-         3500,  175,  109,    6, 0, 15},
-{"Ga-nat the Greedy      (Gnome)      Alchemist"    ,
-        12000,  220,  115,    4, 4,  9},
-{"Valeria Starshine      (Elf)        Magic Shop"   ,
-        32000,  175,  110,    5, 2, 11},
-{"Andy the Friendly      (Halfling)   General Store",
-          200,  170,  108,    5, 3, 15},
-{"Darg-Low the Grim      (Human)      Armory"       ,
-        10000,  190,  111,    4, 0,  9},
-{"Oglign Dragon-Slayer   (Dwarf)      Weaponsmith"  ,
-        32000,  195,  112,    4, 5,  8},
-{"Gunnar the Paladin     (Human)      Temple"       ,
-         5000,  185,  110,    5, 0, 23},
-{"Mauser the Chemist     (Half-Elf)   Alchemist"    ,
-        10000,  190,  111,    5, 1,  8},
-{"Gopher the Great!      (Gnome)      Magic Shop"   ,
-        20000,  215,  113,    6, 4, 10},
-{"Lyar-el the Comely     (Elf)        General Store",
-          300,  165,  107,    6, 2, 18},
-{"Mauglim the Horrible   (Half-Orc)   Armory"       ,
-         3000,  200,  113,    5, 6,  9},
-{"Ithyl-Mak the Beastly  (Half-Troll) Weaponsmith"  ,
-         3000,  210,  115,    6, 7,  8},
-{"Delilah the Pure       (Half-Elf)   Temple"       ,
-        25000,  180,  107,    6, 1, 20},
-{"Wizzle the Chaotic     (Halfling)   Alchemist"    ,
-        10000,  190,  110,    6, 3,  8},
-{"Inglorian the Mage     (Human?)     Magic Shop"   ,
-        32000,  200,  110,    7, 0, 10}
-};
-#endif
 
 /* Buying and selling adjustments for character race VS store   */
 /* owner race                                                    */
@@ -120,7 +65,6 @@ int16u store_choice[MAX_STORES][STORE_CHOICES] = {
         293,294,295,308,269,290,319,282}
 };
 
-#ifndef MAC
 /* MPW doesn't seem to handle this very well, so replace store_buy array
    with a function call on mac */
 /* functions defined in sets.c */
@@ -130,91 +74,9 @@ extern int general_store(), armory(), weaponsmith(), temple(),
 /* Each store will buy only certain items, based on TVAL */
 int (*store_buy[MAX_STORES])() = {
        general_store, armory, weaponsmith, temple, alchemist, magic_shop};
-#endif
 
 /* Following are arrays for descriptive pieces                  */
 
-#ifdef MACGAME
-
-char **colors;
-char **mushrooms;
-char **woods;
-char **metals;
-char **rocks;
-char **amulets;
-char **syllables;
-
-#else
-
-char *colors[MAX_COLORS] = {
-/* Do not move the first three */
-  "Icky Green", "Light Brown", "Clear",
-  "Azure","Blue","Blue Speckled","Black","Brown","Brown Speckled","Bubbling",
-  "Chartreuse","Cloudy","Copper Speckled","Crimson","Cyan","Dark Blue",
-  "Dark Green","Dark Red","Gold Speckled","Green","Green Speckled","Grey",
-  "Grey Speckled","Hazy","Indigo","Light Blue","Light Green","Magenta",
-  "Metallic Blue","Metallic Red","Metallic Green","Metallic Purple","Misty",
-  "Orange","Orange Speckled","Pink","Pink Speckled","Puce","Purple",
-  "Purple Speckled","Red","Red Speckled","Silver Speckled","Smoky",
-  "Tangerine","Violet","Vermilion","White","Yellow"
-};
-
-char *mushrooms[MAX_MUSH] = {
-  "Blue","Black","Black Spotted","Brown","Dark Blue","Dark Green","Dark Red",
-  "Ecru","Furry","Green","Grey","Light Blue","Light Green","Plaid","Red",
-  "Slimy","Tan","White","White Spotted","Wooden","Wrinkled","Yellow",
-};
-
-char *woods[MAX_WOODS] = {
-  "Aspen","Balsa","Banyan","Birch","Cedar","Cottonwood","Cypress","Dogwood",
-  "Elm","Eucalyptus","Hemlock","Hickory","Ironwood","Locust","Mahogany",
-  "Maple","Mulberry","Oak","Pine","Redwood","Rosewood","Spruce","Sycamore",
-  "Teak","Walnut",
-};
-
-char *metals[MAX_METALS] = {
-  "Aluminum","Cast Iron","Chromium","Copper","Gold","Iron","Magnesium",
-  "Molybdenum","Nickel","Rusty","Silver","Steel","Tin","Titanium","Tungsten",
-  "Zirconium","Zinc","Aluminum-Plated","Copper-Plated","Gold-Plated",
-  "Nickel-Plated","Silver-Plated","Steel-Plated","Tin-Plated","Zinc-Plated"
-};
-
-char *rocks[MAX_ROCKS] = {
-  "Alexandrite","Amethyst","Aquamarine","Azurite","Beryl","Bloodstone",
-  "Calcite","Carnelian","Corundum","Diamond","Emerald","Fluorite","Garnet",
-  "Granite","Jade","Jasper","Lapis Lazuli","Malachite","Marble","Moonstone",
-  "Onyx","Opal","Pearl","Quartz","Quartzite","Rhodonite","Ruby","Sapphire",
-  "Tiger Eye","Topaz","Turquoise","Zircon"
-};
-
-char *amulets[MAX_AMULETS] = {
-  "Amber","Driftwood","Coral","Agate","Ivory","Obsidian",
-  "Bone","Brass","Bronze","Pewter","Tortoise Shell"
-};
-
-char *syllables[MAX_SYLLABLES] = {
-  "a","ab","ag","aks","ala","an","ankh","app",
-  "arg","arze","ash","aus","ban","bar","bat","bek",
-  "bie","bin","bit","bjor","blu","bot","bu",
-  "byt","comp","con","cos","cre","dalf","dan",
-  "den","doe","dok","eep","el","eng","er","ere","erk",
-  "esh","evs","fa","fid","for","fri","fu","gan",
-  "gar","glen","gop","gre","ha","he","hyd","i",
-  "ing","ion","ip","ish","it","ite","iv","jo",
-  "kho","kli","klis","la","lech","man","mar",
-  "me","mi","mic","mik","mon","mung","mur","nej",
-  "nelg","nep","ner","nes","nis","nih","nin","o",
-  "od","ood","org","orn","ox","oxy","pay","pet",
-  "ple","plu","po","pot","prok","re","rea","rhov",
-  "ri","ro","rog","rok","rol","sa","san","sat",
-  "see","sef","seh","shu","ski","sna","sne","snik",
-  "sno","so","sol","sri","sta","sun","ta","tab",
-  "tem","ther","ti","tox","trol","tue","turs","u",
-  "ulk","um","un","uni","ur","val","viv","vly",
-  "vom","wah","wed","werg","wex","whon","wun","x",
-  "yerg","yp","zun"
-};
-#endif
 
 /* used to calculate the number of blows the player gets in combat */
 int8u blows_table[7][6] = {
@@ -265,3 +127,5 @@ int16u normal_table[NORMAL_TABLE_SIZE] = {
    32763,   32763,   32763,   32764,   32764,   32764,   32764,   32765,
    32765,   32765,   32765,   32766,   32766,   32766,   32766,   32766,
 };
+
+

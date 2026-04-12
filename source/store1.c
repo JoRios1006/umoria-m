@@ -23,20 +23,10 @@
 #include "types.h"
 #include "externs.h"
 
-#ifdef USG
-#ifndef ATARIST_MWC
 #include <string.h>
-#endif
-#else
-#include <strings.h>
-#endif
 
 #if defined(LINT_ARGS)
-static void insert_store(int, int, int32, struct inven_type *);
-static void store_create(int);
 #else
-static void insert_store();
-static void store_create();
 #endif
 
 
@@ -465,3 +455,5 @@ int32 price, minprice;
 	  s_ptr->bad_buy++;
       }
 }
+
+

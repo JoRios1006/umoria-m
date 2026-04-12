@@ -14,24 +14,12 @@
 #include "types.h"
 #include "externs.h"
 
-#ifdef USG
-#ifndef ATARIST_MWC
 #include <string.h>
-#endif
-#else
-#include <strings.h>
-#endif
 
 #if defined(LINT_ARGS)
-static void unsample(struct inven_type *);
 #else
-static void unsample();
 #endif
 
-#ifdef ATARIST_TC
-/* Include this to get prototypes for standard library functions.  */
-#include <stdlib.h>
-#endif
 
 char titles[MAX_TITLES][10];
 
@@ -256,17 +244,10 @@ int *item;
   register int i, x1, x2;
   int j;
   register inven_type *i_ptr, *t_ptr;
-#ifdef ATARIST_MWC
-  int32u holder;
-#endif
 
   i_ptr = &inventory[*item];
 
-#ifdef ATARIST_MWC
-  if (i_ptr->flags & (holder = TR_CURSED))
-#else
   if (i_ptr->flags & TR_CURSED)
-#endif
     add_inscribe(i_ptr, ID_DAMD);
 
   if (!known1_p(i_ptr))
@@ -743,3 +724,5 @@ int item_val;
   (void) sprintf(out_val, "You have %s", tmp_str);
   msg_print(out_val);
 }
+
+

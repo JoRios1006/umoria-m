@@ -26,18 +26,10 @@
 #include "types.h"
 #include "externs.h"
 
-#ifdef USG
-#ifndef ATARIST_MWC
 #include <string.h>
-#endif
-#else
-#include <strings.h>
-#endif
 
 #if defined(LINT_ARGS)
-static void replace_spot(int, int, int);
 #else
-static void replace_spot();
 #endif
 
 /* Following are spell procedure/functions			-RAK-	*/
@@ -223,20 +215,13 @@ int detect_invisible()
 {
   register int i, flag;
   register monster_type *m_ptr;
-#ifdef ATARIST_MWC
-  int32u holder;
-#endif
 
   flag = FALSE;
   for (i = mfptr - 1; i >= MIN_MONIX; i--)
     {
       m_ptr = &m_list[i];
       if (panel_contains((int)m_ptr->fy, (int)m_ptr->fx) &&
-#ifdef ATARIST_MWC
-	  ((holder = CM_INVISIBLE) & c_list[m_ptr->mptr].cmove))
-#else
 	  (CM_INVISIBLE & c_list[m_ptr->mptr].cmove))
-#endif
 	{
 	  m_ptr->ml = TRUE;
 	  /* works correctly even if hallucinating */
@@ -520,20 +505,13 @@ int detect_monsters()
 {
   register int i, detect;
   register monster_type *m_ptr;
-#ifdef ATARIST_MWC
-  int32u holder;
-#endif
 
   detect = FALSE;
   for (i = mfptr - 1; i >= MIN_MONIX; i--)
     {
       m_ptr = &m_list[i];
       if (panel_contains((int)m_ptr->fy, (int)m_ptr->fx) &&
-#ifdef ATARIST_MWC
-	  (((holder = CM_INVISIBLE) & c_list[m_ptr->mptr].cmove) == 0))
-#else
 	  ((CM_INVISIBLE & c_list[m_ptr->mptr].cmove) == 0))
-#endif
 	{
 	  m_ptr->ml = TRUE;
 	  /* works correctly even if hallucinating */
@@ -974,9 +952,6 @@ int monptr;
   register cave_type *c_ptr;
   register monster_type *m_ptr;
   register creature_type *r_ptr;
-#ifdef ATARIST_MWC
-  int32u holder;
-#endif
 
   max_dis = 2;
   get_flags(typ, &weapon_type, &harm_type, &destroy);
@@ -1016,22 +991,12 @@ int monptr;
 					    r_ptr->cmove);
 		      if (m_ptr->ml)
 			{
-#ifdef ATARIST_MWC
-			  holder = CM_TREASURE;
-			  tmp = (c_recall[m_ptr->mptr].r_cmove & holder)
-			    >> CM_TR_SHIFT;
-			  if (tmp > ((treas & holder) >> CM_TR_SHIFT))
-			    treas = (treas & ~holder)|(tmp << CM_TR_SHIFT);
-			  c_recall[m_ptr->mptr].r_cmove = treas |
-			    (c_recall[m_ptr->mptr].r_cmove & ~holder);
-#else
 			  tmp = (c_recall[m_ptr->mptr].r_cmove & CM_TREASURE)
 			    >> CM_TR_SHIFT;
 			  if (tmp > ((treas & CM_TREASURE) >> CM_TR_SHIFT))
 			    treas = (treas & ~CM_TREASURE)|(tmp<<CM_TR_SHIFT);
 			  c_recall[m_ptr->mptr].r_cmove = treas |
 			    (c_recall[m_ptr->mptr].r_cmove & ~CM_TREASURE);
-#endif
 			}
 
 		      /* It ate an already processed monster.Handle normally.*/
@@ -1568,9 +1533,6 @@ int dir, y, x;
   register monster_type *m_ptr;
   register creature_type *r_ptr;
   vtype m_name, out_val;
-#ifdef ATARIST_MWC
-  int32u holder;
-#endif
 
   build = FALSE;
   dist = 0;
@@ -1593,11 +1555,7 @@ int dir, y, x;
 	      m_ptr = &m_list[c_ptr->cptr];
 	      r_ptr = &c_list[m_ptr->mptr];
 
-#ifdef ATARIST_MWC
-	      if (!(r_ptr->cmove & (holder = CM_PHASE)))
-#else
 	      if (!(r_ptr->cmove & CM_PHASE))
-#endif
 		{
 		  /* monster does not move, can't escape the wall */
 		  if (r_ptr->cmove & CM_ATTACK_ONLY)
@@ -1779,21 +1737,13 @@ int mass_genocide()
   register int i, result;
   register monster_type *m_ptr;
   register creature_type *r_ptr;
-#ifdef ATARIST_MWC
-  int32u holder;
-#endif
 
   result = FALSE;
   for (i = mfptr - 1; i >= MIN_MONIX; i--)
     {
       m_ptr = &m_list[i];
       r_ptr = &c_list[m_ptr->mptr];
-#ifdef ATARIST_MWC
-      if ((m_ptr->cdis <= MAX_SIGHT) &&
-	  ((r_ptr->cmove & (holder = CM_WIN)) == 0))
-#else
       if ((m_ptr->cdis <= MAX_SIGHT) && ((r_ptr->cmove & CM_WIN) == 0))
-#endif
 	{
 	  delete_monster(i);
 	  result = TRUE;
@@ -1812,9 +1762,6 @@ int genocide()
   register monster_type *m_ptr;
   register creature_type *r_ptr;
   vtype out_val;
-#ifdef ATARIST_MWC
-  int32u holder;
-#endif
 
   killed = FALSE;
   if (get_com("Which type of creature do you wish exterminated?", &typ))
@@ -1823,11 +1770,7 @@ int genocide()
 	m_ptr = &m_list[i];
 	r_ptr = &c_list[m_ptr->mptr];
 	if (typ == c_list[m_ptr->mptr].cchar)
-#ifdef ATARIST_MWC
-	  if ((r_ptr->cmove & (holder = CM_WIN)) == 0)
-#else
 	  if ((r_ptr->cmove & CM_WIN) == 0)
-#endif
 	    {
 	      delete_monster(i);
 	      killed = TRUE;
@@ -1951,9 +1894,6 @@ int mass_poly()
   int y, x, mass;
   register monster_type *m_ptr;
   register creature_type *r_ptr;
-#ifdef ATARIST_MWC
-  int32u holder;
-#endif
 
   mass = FALSE;
   for (i = mfptr - 1; i >= MIN_MONIX; i--)
@@ -1962,11 +1902,7 @@ int mass_poly()
       if (m_ptr->cdis <= MAX_SIGHT)
 	{
 	  r_ptr = &c_list[m_ptr->mptr];
-#ifdef ATARIST_MWC
-	  if ((r_ptr->cmove & (holder = CM_WIN)) == 0)
-#else
 	  if ((r_ptr->cmove & CM_WIN) == 0)
-#endif
 	    {
 	      y = m_ptr->fy;
 	      x = m_ptr->fx;
@@ -2125,9 +2061,6 @@ void earthquake()
   register creature_type *r_ptr;
   int damage, tmp;
   vtype out_val, m_name;
-#ifdef ATARIST_MWC
-  int32u holder;
-#endif
 
   for (i = char_row-8; i <= char_row+8; i++)
     for (j = char_col-8; j <= char_col+8; j++)
@@ -2142,11 +2075,7 @@ void earthquake()
 	      m_ptr = &m_list[c_ptr->cptr];
 	      r_ptr = &c_list[m_ptr->mptr];
 
-#ifdef ATARIST_MWC
-	      if (!(r_ptr->cmove & (holder = CM_PHASE)))
-#else
 	      if (!(r_ptr->cmove & CM_PHASE))
-#endif
 		{
 		  if(r_ptr->cmove & CM_ATTACK_ONLY)
 		    damage = 3000; /* this will kill everything */
@@ -2578,25 +2507,14 @@ int remove_curse()
 {
   register int i, result;
   register inven_type *i_ptr;
-#ifdef ATARIST_MWC
-  int32u holder = TR_CURSED;
-#endif
 
   result = FALSE;
   for (i = INVEN_WIELD; i <= INVEN_OUTER; i++)
     {
       i_ptr = &inventory[i];
-#ifdef ATARIST_MWC
-      if (holder & i_ptr->flags)
-#else
       if (TR_CURSED & i_ptr->flags)
-#endif
 	{
-#ifdef ATARIST_MWC
-	  i_ptr->flags &= ~holder;
-#else
 	  i_ptr->flags &= ~TR_CURSED;
-#endif
 	  calc_bonuses();
 	  result = TRUE;
 	}
@@ -2626,3 +2544,5 @@ int restore_level()
     }
   return(restore);
 }
+
+

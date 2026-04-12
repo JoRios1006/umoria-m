@@ -26,10 +26,7 @@
 #include "externs.h"
 
 #if defined(LINT_ARGS)
-static int see_wall(int, int, int);
-static int see_nothing(int, int, int);
 #else
-static int see_wall();
 #endif
 
 
@@ -352,15 +349,6 @@ int dir, y, x;
 
   if (!mmove(dir, &y, &x))	/* check to see if movement there possible */
     return TRUE;
-#ifdef MSDOS
-  else if ((c = loc_symbol(y, x)) == wallsym || c == '%')
-#else
-#ifdef ATARI_ST
-  else if ((c = loc_symbol(y, x)) == (unsigned char)240 || c == '%')
-#else
-  else if ((c = loc_symbol(y, x)) == '#' || c == '%')
-#endif
-#endif
     return TRUE;
   else
     return FALSE;
@@ -635,15 +623,8 @@ int32u typ_dam;
 void corrode_gas(kb_str)
 char *kb_str;
 {
-#ifdef ATARIST_MWC
-  int32u holder;
-#endif
 
-#ifdef ATARIST_MWC
-  if (!minus_ac((int32u) (holder = TR_RES_ACID)))
-#else
   if (!minus_ac((int32u) TR_RES_ACID))
-#endif
     take_hit(randint(8), kb_str);
   if (inven_damage(set_corrodes, 5) > 0)
     msg_print("There is an acrid smell coming from your pack.");
@@ -710,16 +691,9 @@ int dam;
 char *kb_str;
 {
   register int flag;
-#ifdef ATARIST_MWC
-  int32u holder;
-#endif
 
   flag = 0;
-#ifdef ATARIST_MWC
-  if (minus_ac((int32u) (holder = TR_RES_ACID)))
-#else
   if (minus_ac((int32u) TR_RES_ACID))
-#endif
     flag = 1;
   if (py.flags.acid_resist)
     flag += 2;
@@ -727,3 +701,5 @@ char *kb_str;
   if (inven_damage(set_acid_affect, 3) > 0)
     msg_print("There is an acrid smell coming from your pack!");
 }
+
+

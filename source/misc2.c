@@ -34,9 +34,6 @@ int x, level;
   register inven_type *t_ptr;
   register int chance, special, cursed, i;
   int tmp;
-#ifdef ATARIST_MWC
-  int32u holder;
-#endif
 
   chance = OBJ_BASE_MAGIC + level;
   if (chance > OBJ_BASE_MAX)
@@ -61,50 +58,29 @@ int x, level;
 	    switch(randint(9))
 	      {
 	      case 1:
-#ifdef ATARIST_MWC
-		t_ptr->flags |= (holder = TR_RES_LIGHT|TR_RES_COLD|TR_RES_ACID|
-				 TR_RES_FIRE);
-#else
 		t_ptr->flags |= (TR_RES_LIGHT|TR_RES_COLD|TR_RES_ACID|
 				 TR_RES_FIRE);
-#endif
 		t_ptr->name2 = SN_R;
 		t_ptr->toac += 5;
 		t_ptr->cost += 2500;
 		break;
 	      case 2:	 /* Resist Acid	  */
-#ifdef ATARIST_MWC
-		t_ptr->flags |= (holder = TR_RES_ACID);
-#else
 		t_ptr->flags |= TR_RES_ACID;
-#endif
 		t_ptr->name2 = SN_RA;
 		t_ptr->cost += 1000;
 		break;
 	      case 3: case 4:	 /* Resist Fire	  */
-#ifdef ATARIST_MWC
-		t_ptr->flags |= (holder = TR_RES_FIRE);
-#else
 		t_ptr->flags |= TR_RES_FIRE;
-#endif
 		t_ptr->name2 = SN_RF;
 		t_ptr->cost += 600;
 		break;
 	      case 5: case 6:	/* Resist Cold	 */
-#ifdef ATARIST_MWC
-		t_ptr->flags |= (holder = TR_RES_COLD);
-#else
 		t_ptr->flags |= TR_RES_COLD;
-#endif
 		t_ptr->name2 = SN_RC;
 		t_ptr->cost += 600;
 		break;
 	      case 7: case 8: case 9:  /* Resist Lightning*/
-#ifdef ATARIST_MWC
-		t_ptr->flags |= (holder = TR_RES_LIGHT);
-#else
 		t_ptr->flags |= TR_RES_LIGHT;
-#endif
 		t_ptr->name2 = SN_RL;
 		t_ptr->cost += 500;
 		break;
@@ -114,11 +90,7 @@ int x, level;
 	{
 	  t_ptr->toac -= m_bonus(1, 40, level);
 	  t_ptr->cost = 0;
-#ifdef ATARIST_MWC
-	  t_ptr->flags |= (holder = TR_CURSED);
-#else
 	  t_ptr->flags |= TR_CURSED;
-#endif
 	}
       break;
 
@@ -138,13 +110,8 @@ int x, level;
 	    switch(randint(16))
 	      {
 	      case 1:	/* Holy Avenger	 */
-#ifdef ATARIST_MWC
-		t_ptr->flags |= (holder = TR_SEE_INVIS|TR_SUST_STAT|
-				 TR_SLAY_UNDEAD|TR_SLAY_EVIL|TR_STR);
-#else
 		t_ptr->flags |= (TR_SEE_INVIS|TR_SUST_STAT|TR_SLAY_UNDEAD|
 				 TR_SLAY_EVIL|TR_STR);
-#endif
 		t_ptr->tohit += 5;
 		t_ptr->todam += 5;
 		t_ptr->toac  += randint(4);
@@ -156,15 +123,9 @@ int x, level;
 		t_ptr->cost += 10000;
 		break;
 	      case 2:	/* Defender	 */
-#ifdef ATARIST_MWC
-		t_ptr->flags |= (holder = TR_FFALL|TR_RES_LIGHT|TR_SEE_INVIS|
-				 TR_FREE_ACT|TR_RES_COLD|TR_RES_ACID|
-				 TR_RES_FIRE|TR_REGEN|TR_STEALTH);
-#else
 		t_ptr->flags |= (TR_FFALL|TR_RES_LIGHT|TR_SEE_INVIS|TR_FREE_ACT
 				 |TR_RES_COLD|TR_RES_ACID|TR_RES_FIRE|
 				 TR_REGEN|TR_STEALTH);
-#endif
 		t_ptr->tohit += 3;
 		t_ptr->todam += 3;
 		t_ptr->toac  += 5 + randint(5);
@@ -196,33 +157,21 @@ int x, level;
 		t_ptr->cost += 4000;
 		break;
 	      case 9: case 10:	 /* Slay Undead	  */
-#ifdef ATARIST_MWC
-		t_ptr->flags |= (holder = TR_SEE_INVIS|TR_SLAY_UNDEAD);
-#else
 		t_ptr->flags |= (TR_SEE_INVIS|TR_SLAY_UNDEAD);
-#endif
 		t_ptr->tohit += 3;
 		t_ptr->todam += 3;
 		t_ptr->name2 = SN_SU;
 		t_ptr->cost += 5000;
 		break;
 	      case 11: case 12: case 13:   /* Flame Tongue  */
-#ifdef ATARIST_MWC
-		t_ptr->flags |= (holder = TR_FLAME_TONGUE);
-#else
 		t_ptr->flags |= TR_FLAME_TONGUE;
-#endif
 		t_ptr->tohit++;
 		t_ptr->todam += 3;
 		t_ptr->name2 = SN_FT;
 		t_ptr->cost += 2000;
 		break;
 	      case 14: case 15: case 16:   /* Frost Brand   */
-#ifdef ATARIST_MWC
-		t_ptr->flags |= (holder = TR_FROST_BRAND);
-#else
 		t_ptr->flags |= TR_FROST_BRAND;
-#endif
 		t_ptr->tohit++;
 		t_ptr->todam++;
 		t_ptr->name2 = SN_FB;
@@ -236,11 +185,7 @@ int x, level;
 	  /* Magical damage bonus now proportional to weapon base damage */
 	  tmp = t_ptr->damage[0] * t_ptr->damage[1];
 	  t_ptr->todam -= m_bonus(1, 11*tmp/2, tmp*level/10);
-#ifdef ATARIST_MWC
-	  t_ptr->flags |= (holder = TR_CURSED);
-#else
 	  t_ptr->flags |= TR_CURSED;
-#endif
 	  t_ptr->cost = 0;
 	}
       break;
@@ -257,11 +202,7 @@ int x, level;
 	{
 	  t_ptr->tohit -= m_bonus(1, 50, level);
 	  t_ptr->todam -= m_bonus(1, 30, level); /* add damage. -CJS- */
-#ifdef ATARIST_MWC
-	  t_ptr->flags |= (holder = TR_CURSED);
-#else
 	  t_ptr->flags |= TR_CURSED;
-#endif
 	  t_ptr->cost = 0;
 	}
       break;
@@ -279,11 +220,7 @@ int x, level;
 	      /* a cursed digging tool */
 	      t_ptr->p1 = -m_bonus(1, 30, level);
 	      t_ptr->cost = 0;
-#ifdef ATARIST_MWC
-	      t_ptr->flags |= (holder = TR_CURSED);
-#else
 	      t_ptr->flags |= TR_CURSED;
-#endif
 	    }
 	}
       break;
@@ -296,11 +233,7 @@ int x, level;
 	    {
 	      if (randint(2) == 1)
 		{
-#ifdef ATARIST_MWC
-		  t_ptr->flags |= (holder = TR_FREE_ACT);
-#else
 		  t_ptr->flags |= TR_FREE_ACT;
-#endif
 		  t_ptr->name2 = SN_FREE_ACTION;
 		  t_ptr->cost += 1000;
 		}
@@ -332,11 +265,7 @@ int x, level;
 	      t_ptr->p1   = -m_bonus(1, 10, level);
 	    }
 	  t_ptr->toac -= m_bonus(1, 40, level);
-#ifdef ATARIST_MWC
-	  t_ptr->flags |= (holder = TR_CURSED);
-#else
 	  t_ptr->flags |= TR_CURSED;
-#endif
 	  t_ptr->cost = 0;
 	}
       break;
@@ -350,11 +279,7 @@ int x, level;
 	      tmp = randint(12);
 	      if (tmp > 5)
 		{
-#ifdef ATARIST_MWC
-		  t_ptr->flags |= (holder = TR_FFALL);
-#else
 		  t_ptr->flags |= TR_FFALL;
-#endif
 		  t_ptr->name2 = SN_SLOW_DESCENT;
 		  t_ptr->cost += 250;
 		}
@@ -398,11 +323,7 @@ int x, level;
 	    }
 	  t_ptr->cost = 0;
 	  t_ptr->toac -= m_bonus(2, 45, level);
-#ifdef ATARIST_MWC
-	  t_ptr->flags |= (holder = TR_CURSED);
-#else
 	  t_ptr->flags |= TR_CURSED;
-#endif
 	}
       break;
 
@@ -439,11 +360,7 @@ int x, level;
 		  else
 		    {
 		      t_ptr->p1 = 1 + randint(4);
-#ifdef ATARIST_MWC
-		      t_ptr->flags |= (holder = TR_INFRA);
-#else
 		      t_ptr->flags |= TR_INFRA;
-#endif
 		      t_ptr->name2 = SN_INFRAVISION;
 		      t_ptr->cost += t_ptr->p1*250;
 		    }
@@ -455,12 +372,7 @@ int x, level;
 		    case 1:
 		      t_ptr->ident |= ID_SHOW_P1;
 		      t_ptr->p1 = randint(3);
-#ifdef ATARIST_MWC
-		      t_ptr->flags |= (holder = TR_FREE_ACT|TR_CON|TR_DEX|
-				       TR_STR);
-#else
 		      t_ptr->flags |= (TR_FREE_ACT|TR_CON|TR_DEX|TR_STR);
-#endif
 		      t_ptr->name2 = SN_MIGHT;
 		      t_ptr->cost += 1000 + t_ptr->p1*500;
 		      break;
@@ -474,13 +386,8 @@ int x, level;
 		    case 3:
 		      t_ptr->ident |= ID_SHOW_P1;
 		      t_ptr->p1 = randint(3);
-#ifdef ATARIST_MWC
-		      t_ptr->flags |= (holder = TR_RES_LIGHT|TR_RES_COLD|
-				       TR_RES_ACID|TR_RES_FIRE|TR_INT);
-#else
 		      t_ptr->flags |= (TR_RES_LIGHT|TR_RES_COLD|TR_RES_ACID|
 				       TR_RES_FIRE|TR_INT);
-#endif
 		      t_ptr->name2 = SN_MAGI;
 		      t_ptr->cost += 3000 + t_ptr->p1*500;
 		      break;
@@ -494,11 +401,7 @@ int x, level;
 		    case 5:
 		      t_ptr->ident |= ID_SHOW_P1;
 		      t_ptr->p1 = 5*(1 + randint(4));
-#ifdef ATARIST_MWC
-		      t_ptr->flags |= (holder = TR_SEE_INVIS|TR_SEARCH);
-#else
 		      t_ptr->flags |= (TR_SEE_INVIS|TR_SEARCH);
-#endif
 		      t_ptr->name2 = SN_SEEING;
 		      t_ptr->cost += 1000 + t_ptr->p1*100;
 		      break;
@@ -514,11 +417,7 @@ int x, level;
       else if (magik(cursed))
 	{
 	  t_ptr->toac -= m_bonus(1, 45, level);
-#ifdef ATARIST_MWC
-	  t_ptr->flags |= (holder = TR_CURSED);
-#else
 	  t_ptr->flags |= TR_CURSED;
-#endif
 	  t_ptr->cost = 0;
 	  if (magik(special))
 	    switch(randint(7))
@@ -536,19 +435,11 @@ int x, level;
 		t_ptr->name2 = SN_DULLNESS;
 		break;
 	      case 3:
-#ifdef ATARIST_MWC
-		t_ptr->flags |= (holder = TR_BLIND);
-#else
 		t_ptr->flags |= TR_BLIND;
-#endif
 		t_ptr->name2 = SN_BLINDNESS;
 		break;
 	      case 4:
-#ifdef ATARIST_MWC
-		t_ptr->flags |= (holder = TR_TIMID);
-#else
 		t_ptr->flags |= TR_TIMID;
-#endif
 		t_ptr->name2 = SN_TIMIDNESS;
 		break;
 	      case 5:
@@ -578,11 +469,7 @@ int x, level;
 	  if (magik(cursed))
 	    {
 	      t_ptr->p1 = -m_bonus(1, 20, level);
-#ifdef ATARIST_MWC
 	      t_ptr->flags |= TR_CURSED;
-#else
-	      t_ptr->flags |= TR_CURSED;
-#endif
 	      t_ptr->cost = -t_ptr->cost;
 	    }
 	  else
@@ -595,11 +482,7 @@ int x, level;
 	  if (magik(cursed))
 	    {
 	      t_ptr->p1 = -randint(3);
-#ifdef ATARIST_MWC
-	      t_ptr->flags |= (holder = TR_CURSED);
-#else
 	      t_ptr->flags |= TR_CURSED;
-#endif
 	      t_ptr->cost = -t_ptr->cost;
 	    }
 	  else
@@ -611,11 +494,7 @@ int x, level;
 	  if (magik (cursed))
 	    {
 	      t_ptr->p1 = -t_ptr->p1;
-#ifdef ATARIST_MWC
-	      t_ptr->flags |= (holder = TR_CURSED);
-#else
 	      t_ptr->flags |= TR_CURSED;
-#endif
 	      t_ptr->cost = -t_ptr->cost;
 	    }
 	  break;
@@ -625,11 +504,7 @@ int x, level;
 	  if (magik(cursed))
 	    {
 	      t_ptr->todam = -t_ptr->todam;
-#ifdef ATARIST_MWC
-	      t_ptr->flags |= (holder = TR_CURSED);
-#else
 	      t_ptr->flags |= TR_CURSED;
-#endif
 	      t_ptr->cost = -t_ptr->cost;
 	    }
 	  break;
@@ -639,11 +514,7 @@ int x, level;
 	  if (magik(cursed))
 	    {
 	      t_ptr->tohit = -t_ptr->tohit;
-#ifdef ATARIST_MWC
-	      t_ptr->flags |= (holder = TR_CURSED);
-#else
 	      t_ptr->flags |= TR_CURSED;
-#endif
 	      t_ptr->cost = -t_ptr->cost;
 	    }
 	  break;
@@ -653,11 +524,7 @@ int x, level;
 	  if (magik(cursed))
 	    {
 	      t_ptr->toac = -t_ptr->toac;
-#ifdef ATARIST_MWC
-	      t_ptr->flags |= (holder = TR_CURSED);
-#else
 	      t_ptr->flags |= TR_CURSED;
-#endif
 	      t_ptr->cost = -t_ptr->cost;
 	    }
 	  break;
@@ -674,11 +541,7 @@ int x, level;
 	    {
 	      t_ptr->tohit = -t_ptr->tohit;
 	      t_ptr->todam = -t_ptr->todam;
-#ifdef ATARIST_MWC
-	      t_ptr->flags |= (holder = TR_CURSED);
-#else
 	      t_ptr->flags |= TR_CURSED;
-#endif
 	      t_ptr->cost = -t_ptr->cost;
 	    }
 	  break;
@@ -693,11 +556,7 @@ int x, level;
 	  if (magik(cursed))
 	    {
 	      t_ptr->p1 = -m_bonus(1, 20, level);
-#ifdef ATARIST_MWC
-	      t_ptr->flags |= (holder = TR_CURSED);
-#else
 	      t_ptr->flags |= TR_CURSED;
-#endif
 	      t_ptr->cost = -t_ptr->cost;
 	    }
 	  else
@@ -713,11 +572,7 @@ int x, level;
 	    {
 	      t_ptr->p1 = -t_ptr->p1;
 	      t_ptr->cost = -t_ptr->cost;
-#ifdef ATARIST_MWC
-	      t_ptr->flags |= (holder = TR_CURSED);
-#else
 	      t_ptr->flags |= TR_CURSED;
-#endif
 	    }
 	  else
 	    t_ptr->cost += 50*t_ptr->p1;
@@ -859,11 +714,7 @@ int x, level;
 	      t_ptr->todam -= m_bonus(2, 40, level+10);
 	      t_ptr->cost = 0;
 	    }
-#ifdef ATARIST_MWC
-	  t_ptr->flags |= (holder = TR_CURSED);
-#else
 	  t_ptr->flags |= TR_CURSED;
-#endif
 	}
       break;
 
@@ -932,11 +783,7 @@ int x, level;
 		    t_ptr->cost += 20;
 		    break;
 		  case 4: case 5:
-#ifdef ATARIST_MWC
-		    t_ptr->flags |= (holder = TR_FLAME_TONGUE);
-#else
 		    t_ptr->flags |= TR_FLAME_TONGUE;
-#endif
 		    t_ptr->tohit += 2;
 		    t_ptr->todam += 4;
 		    t_ptr->name2 = SN_FIRE;
@@ -969,11 +816,7 @@ int x, level;
 	    {
 	      t_ptr->tohit -= m_bonus(5, 55, level);
 	      t_ptr->todam -= m_bonus(5, 55, level);
-#ifdef ATARIST_MWC
-	      t_ptr->flags |= (holder = TR_CURSED);
-#else
 	      t_ptr->flags |= TR_CURSED;
-#endif
 	      t_ptr->cost = 0;
 	    }
 	}
@@ -1100,3 +943,5 @@ void set_options()
 	}
     }
 }
+
+

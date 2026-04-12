@@ -23,62 +23,16 @@
 #include "types.h"
 #include "externs.h"
 
-#if defined(USG) && !defined(VMS) && !defined(MAC)
-#if !defined(ATARIST_MWC) && !defined(AMIGA)
-#if !defined(__TURBOC__)
 #include <memory.h>
-#else
-#ifndef ATARIST_TC
-#include <mem.h>
-#endif
-#endif
-#endif
 #endif
 
-#if defined(MAC)
-#include <string.h>
-#endif
 
-#ifdef ATARIST_TC
-#include <string.h>
-#endif
 
 typedef struct coords {
   int x, y;
 } coords;
 
 #if defined(LINT_ARGS)
-static void correct_dir(int *, int * , int, int, int, int);
-static void rand_dir(int *,int *);
-static void blank_cave(void);
-static void fill_cave(int);
-static void place_boundary(void);
-static void place_streamer(int, int);
-static void place_open_door(int, int);
-static void place_broken_door(int, int);
-static void place_closed_door(int, int);
-static void place_locked_door(int, int);
-static void place_stuck_door(int, int);
-static void place_secret_door(int, int);
-static void place_door(int, int);
-static void place_up_stairs(int, int);
-static void place_down_stairs(int, int);
-static void place_stairs(int, int, int);
-static void vault_trap(int, int, int, int, int);
-static void vault_monster(int, int, int);
-static void build_room(int, int);
-static void build_type1(int, int);
-static void build_type2(int, int);
-static void build_type3(int, int);
-static void build_tunnel(int, int, int, int);
-static int next_to(int, int);
-static void try_door(int, int);
-static void new_spot(int16 *, int16 *);
-static void cave_gen(void);
-static void build_store(int, int, int);
-static void tlink(void);
-static void mlink(void);
-static void town_gen(void);
 #endif
 
 static coords doorstk[100];
@@ -135,17 +89,7 @@ int *rdir, *cdir;
 /* Blanks out entire cave				-RAK-	*/
 static void blank_cave()
 {
-#ifndef USG
-  bzero ((char *)&cave[0][0], sizeof (cave));
-#else
-#ifdef MAC
-  /* On the mac, cave is a pointer, so sizeof(cave) = 4! */
-  (void)memset((char *)&cave[0][0], 0,
-	       (long) sizeof(cave_type) * MAX_HEIGHT * MAX_WIDTH);
-#else
   (void)memset((char *)&cave[0][0], 0, sizeof (cave));
-#endif
-#endif
 }
 
 
@@ -173,7 +117,6 @@ register int fval;
 }
 
 #ifdef DEBUG
-#include <assert.h>
 #endif
 
 /* Places indestructible rock around edges of dungeon	-RAK-	*/
@@ -191,8 +134,6 @@ static void place_boundary()
   for (i = 0; i < cur_height; i++)
     {
 #ifdef DEBUG
-      assert ((cave_type *)left_ptr == &cave[i][0]);
-      assert ((cave_type *)right_ptr == &cave[i][cur_width-1]);
 #endif
 
       ((cave_type *)left_ptr)->fval	= BOUNDARY_WALL;
@@ -208,8 +149,6 @@ static void place_boundary()
   for (i = 0; i < cur_width; i++)
     {
 #ifdef DEBUG
-      assert (top_ptr == &cave[0][i]);
-      assert (bottom_ptr == &cave[cur_height - 1][i]);
 #endif
 
       top_ptr->fval	= BOUNDARY_WALL;
@@ -1293,9 +1232,6 @@ static void cave_gen()
 	  else
 	    build_room(yloc[k], xloc[k]);
 	  k++;
-#ifdef MAC
-	  SystemTask ();
-#endif
 	}
   for (i = 0; i < k; i++)
     {
@@ -1320,9 +1256,6 @@ static void cave_gen()
       x2 = xloc[i+1];
       build_tunnel(y2, x2, y1, x1);
     }
-#ifdef MAC
-  SystemTask ();
-#endif
   fill_cave(GRANITE_WALL);
   for (i = 0; i < DUN_STR_MAG; i++)
     place_streamer(MAGMA_WALL, DUN_STR_MC);
@@ -1337,9 +1270,6 @@ static void cave_gen()
       try_door(doorstk[i].y-1, doorstk[i].x);
       try_door(doorstk[i].y+1, doorstk[i].x);
     }
-#ifdef MAC
-  SystemTask ();
-#endif
   alloc_level = (dun_level/3);
   if (alloc_level < 2)
     alloc_level = 2;
@@ -1459,9 +1389,6 @@ static void town_gen()
 		c_ptr->pl = TRUE;
 	      c_ptr++;
 	    }
-#ifdef MAC
-	  SystemTask ();
-#endif
 	}
       alloc_monster(MIN_MALLOC_TN, 3, TRUE);
     }
@@ -1475,9 +1402,6 @@ static void town_gen()
 	      c_ptr->pl = TRUE;
 	      c_ptr++;
 	    }
-#ifdef MAC
-	  SystemTask ();
-#endif
 	}
       alloc_monster(MIN_MALLOC_TD, 3, TRUE);
     }
@@ -1495,9 +1419,6 @@ void generate_cave()
   char_row = -1;
   char_col = -1;
 
-#ifdef MAC
-  macbeginwait ();
-#endif
 
   tlink();
   mlink();
@@ -1523,7 +1444,6 @@ void generate_cave()
       panel_col = max_panel_cols;
       cave_gen();
     }
-#ifdef MAC
-  macendwait ();
-#endif
 }
+
+

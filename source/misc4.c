@@ -25,18 +25,8 @@
 #include "types.h"
 #include "externs.h"
 
-#ifndef USG
-#include <sys/types.h>
-#include <sys/param.h>
-#endif
 
-#ifdef USG
-#ifndef ATARIST_MWC
 #include <string.h>
-#endif
-#else
-#include <strings.h>
-#endif
 
 
 /* Add a comment to an object description.		-CJS- */
@@ -116,3 +106,5 @@ void check_view()
 	  }
     }
 }
+
+

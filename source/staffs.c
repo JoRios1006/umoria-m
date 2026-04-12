@@ -23,11 +23,7 @@
 #include "types.h"
 #include "externs.h"
 
-#ifdef USG
 #include <string.h>
-#else
-#include <strings.h>
-#endif
 
 
 /* Use a staff.					-RAK-	*/
@@ -194,3 +190,5 @@ void use()
 	}
     }
 }
+
+
