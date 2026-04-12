@@ -22,51 +22,51 @@
 /* Original copyright message follows; included for historical reasons
    but no longer valid. */
 
-/* Moria Version 4.8	COPYRIGHT (c) Robert Alan Koeneke		*/
-/*									 */
-/*	 I lovingly dedicate this game to hackers and adventurers	 */
-/*	 everywhere...							 */
-/*									 */
-/*									 */
-/*	 Designer and Programmer : Robert Alan Koeneke			 */
-/*				   University of Oklahoma		 */
-/*									 */
-/*	 Assistant Programmers	 : Jimmey Wayne Todd			 */
-/*				   University of Oklahoma		 */
-/*									 */
-/*				   Gary D. McAdoo			 */
-/*				   University of Oklahoma		 */
-/*									 */
-/*	 UNIX Port		 : James E. Wilson			 */
-/*				   UC Berkeley				 */
-/*				   wilson@kithrup.com			 */
-/*									 */
-/*	 MSDOS Port		 : Don Kneller				 */
-/*				   1349 - 10th ave			 */
-/*				   San Francisco, CA 94122		 */
-/*				   kneller@cgl.ucsf.EDU			 */
-/*				   ...ucbvax!ucsfcgl!kneller		 */
-/*				   kneller@ucsf-cgl.BITNET		 */
-/*									 */
-/*	 BRUCE Moria		 : Christopher Stuart			 */
-/*				   Monash University			 */
-/*				   Melbourne, Victoria, AUSTRALIA	 */
-/*				   cjs@moncsbruce.oz			 */
-/*									 */
+/* Moria Version 4.8    COPYRIGHT (c) Robert Alan Koeneke               */
+/*                                                                       */
+/*       I lovingly dedicate this game to hackers and adventurers        */
+/*       everywhere...                                                   */
+/*                                                                       */
+/*                                                                       */
+/*       Designer and Programmer : Robert Alan Koeneke                   */
+/*                                 University of Oklahoma                */
+/*                                                                       */
+/*       Assistant Programmers   : Jimmey Wayne Todd                     */
+/*                                 University of Oklahoma                */
+/*                                                                       */
+/*                                 Gary D. McAdoo                        */
+/*                                 University of Oklahoma                */
+/*                                                                       */
+/*       UNIX Port               : James E. Wilson                       */
+/*                                 UC Berkeley                           */
+/*                                 wilson@kithrup.com                    */
+/*                                                                       */
+/*       MSDOS Port              : Don Kneller                           */
+/*                                 1349 - 10th ave                       */
+/*                                 San Francisco, CA 94122               */
+/*                                 kneller@cgl.ucsf.EDU                  */
+/*                                 ...ucbvax!ucsfcgl!kneller             */
+/*                                 kneller@ucsf-cgl.BITNET               */
+/*                                                                       */
+/*       BRUCE Moria             : Christopher Stuart                    */
+/*                                 Monash University                     */
+/*                                 Melbourne, Victoria, AUSTRALIA        */
+/*                                 cjs@moncsbruce.oz                     */
+/*                                                                       */
 /*       Amiga Port              : Corey Gehman                          */
 /*                                 Clemson University                    */
 /*                                 cg377170@eng.clemson.edu              */
-/*									 */
-/*	 Version 5.6		 : David Grabiner			 */
+/*                                                                       */
+/*       Version 5.6             : David Grabiner                        */
 /*                                 grabiner@alumni.princeton.edu         */
 /*                                                                       */
 
 #ifdef __TURBOC__
-#include	<io.h>
+#include        <io.h>
 #endif /* __TURBOC__ */
 
-#include	<stdio.h>
-#include	<stdlib.h>
+#include        <stdio.h>
+#include        <stdlib.h>
  
 #include "config.h"
 #include "constant.h"
@@ -109,6 +109,7 @@ char *getenv();
 
 #ifndef MAC
 #ifndef AMIGA
+#ifndef __linux__ /* unistd.h already provides getuid/getgid on Linux */
 #ifdef USG
 #if !defined(MSDOS) && !defined(ATARIST_TC)
 unsigned short getuid(), getgid();
@@ -122,6 +123,7 @@ int getuid(), getgid();
 #endif
 #endif
 #endif
+#endif /* __linux__ */
 #endif
 #endif
 
@@ -148,17 +150,17 @@ long _stksize = 64*1024;
 */
 
 #ifdef ATARIST_MWC
-long _stksize = 18000;		/*(SAJ) for MWC	*/
+long _stksize = 18000;          /*(SAJ) for MWC */
 #endif
 
 #ifdef __TURBOC__
-unsigned _stklen = 0x3fff;	/* increase stack from 4K to 16K */
+unsigned _stklen = 0x3fff;      /* increase stack from 4K to 16K */
 #endif
 #ifdef AMIGA
 \/* detach from cli process */
 
 #ifdef LATTICE
-#define NEAR	near
+#define NEAR    near
 #else
 #define NEAR
 #endif
@@ -186,7 +188,7 @@ static void price_adjust();
 #endif
 #endif
 
-/* Initialize, restore, and get the ball rolling.	-RAK-	*/
+/* Initialize, restore, and get the ball rolling.       -RAK-   */
 #ifdef MAC
 /* This is just a subroutine for the Mac version */
 /* only options passed in are -orn */
@@ -218,7 +220,7 @@ char *argv[];
 #endif
 
 #ifdef MSDOS
-  msdos_init();		/* find out where everything is */
+  msdos_init();         /* find out where everything is */
 #endif
 
   /* call this routine to grab a file pointer to the highscore file */
@@ -266,52 +268,52 @@ char *argv[];
       case 'n': new_game = TRUE; break;
       case 'O':
       case 'o':
-	/* rogue_like_commands may be set in get_char(), so delay this
-	   until after read savefile if any */
-	force_rogue_like = TRUE;
-	force_keys_to = FALSE;
-	break;
+        /* rogue_like_commands may be set in get_char(), so delay this
+           until after read savefile if any */
+        force_rogue_like = TRUE;
+        force_keys_to = FALSE;
+        break;
       case 'R':
       case 'r':
-	force_rogue_like = TRUE;
-	force_keys_to = TRUE;
-	break;
+        force_rogue_like = TRUE;
+        force_keys_to = TRUE;
+        break;
 #ifndef MAC
       case 'S': display_scores(TRUE); exit_game();
       case 's': display_scores(FALSE); exit_game();
       case 'W':
       case 'w':
-	to_be_wizard = TRUE;
+        to_be_wizard = TRUE;
 
-	if (isdigit((int)argv[0][2]))
-	  seed = atoi(&argv[0][2]);
-	break;
+        if (isdigit((int)argv[0][2]))
+          seed = atoi(&argv[0][2]);
+        break;
       default: (void) printf("Usage: moria [-norsw] [savefile]\n");
-	exit_game();
+        exit_game();
 #endif
       }
 
 #ifndef MAC
-  /* Check operating hours			*/
-  /* If not wizard  No_Control_Y	       */
+  /* Check operating hours                      */
+  /* If not wizard  No_Control_Y               */
   read_times();
 #endif
 
-  /* Some necessary initializations		*/
+  /* Some necessary initializations             */
   /* all made into constants or initialized in variables.c */
 
 #if (COST_ADJ != 100)
   price_adjust();
 #endif
 
-  /* Grab a random seed from the clock		*/
+  /* Grab a random seed from the clock          */
   init_seeds(seed);
 
   /* Init monster and treasure levels for allocate */
   init_m_level();
   init_t_level();
 
-  /* Init the store inventories			*/
+  /* Init the store inventories                 */
   store_init();
 
 #ifndef MAC
@@ -363,10 +365,10 @@ char *argv[];
 
       /* could be restoring a dead character after a signal or HANGUP */
       if (py.misc.chp < 0)
-	death = TRUE;
+        death = TRUE;
     }
   else
-    {	  /* Create character	   */
+    {     /* Create character      */
       create_character();
 #ifdef MAC
       birth_date = time ((time_t *)0);
@@ -377,20 +379,20 @@ char *argv[];
       py.flags.food = 7500;
       py.flags.food_digested = 2;
       if (class[py.misc.pclass].spell == MAGE)
-	{	  /* Magic realm   */
-	  clear_screen(); /* makes spell list easier to read */
-	  calc_spells(A_INT);
-	  calc_mana(A_INT);
-	}
+        {         /* Magic realm   */
+          clear_screen(); /* makes spell list easier to read */
+          calc_spells(A_INT);
+          calc_mana(A_INT);
+        }
       else if (class[py.misc.pclass].spell == PRIEST)
-	{	  /* Clerical realm*/
-	  calc_spells(A_WIS);
-	  clear_screen(); /* force out the 'learn prayer' message */
-	  calc_mana(A_WIS);
-	}
+        {         /* Clerical realm*/
+          calc_spells(A_WIS);
+          clear_screen(); /* force out the 'learn prayer' message */
+          calc_mana(A_WIS);
+        }
       /* prevent ^c quit from entering score into scoreboard,
-	 and prevent signal from creating panic save until this point,
-	 all info needed for save file is now valid */
+         and prevent signal from creating panic save until this point,
+         all info needed for save file is now valid */
       character_generated = 1;
       generate = TRUE;
     }
@@ -400,41 +402,41 @@ char *argv[];
 
   magic_init();
 
-  /* Begin the game				*/
+  /* Begin the game                             */
   clear_screen();
   prt_stat_block();
   if (generate)
     generate_cave();
 
-  /* Loop till dead, or exit			*/
+  /* Loop till dead, or exit                    */
   while(!death)
     {
-      dungeon();				  /* Dungeon logic */
+      dungeon();                                  /* Dungeon logic */
 
 #ifndef MAC
       /* check for eof here, see inkey() in io.c */
       /* eof can occur if the process gets a HANGUP signal */
       if (eof_flag)
-	{
-	  (void) strcpy(died_from, "(end of input: saved)");
-	  if (!save_char())
-	    {
-	      (void) strcpy(died_from, "unexpected eof");
-	    }
-	  /* should not reach here, by if we do, this guarantees exit */
-	  death = TRUE;
-	}
+        {
+          (void) strcpy(died_from, "(end of input: saved)");
+          if (!save_char())
+            {
+              (void) strcpy(died_from, "unexpected eof");
+            }
+          /* should not reach here, by if we do, this guarantees exit */
+          death = TRUE;
+        }
 #endif
 
-      if (!death) generate_cave();	       /* New level	*/
+      if (!death) generate_cave();             /* New level     */
     }
 
-  exit_game();		/* Character gets buried. */
+  exit_game();          /* Character gets buried. */
   /* should never reach here, but just in case */
   return (0);
 }
 
-/* Init players with some belongings			-RAK-	*/
+/* Init players with some belongings                    -RAK-   */
 static void char_inven_init()
 {
   register int i, j;
@@ -452,7 +454,7 @@ static void char_inven_init()
       store_bought(&inven_init);
       /* must set this bit to display tohit/todam for stiletto */
       if (inven_init.tval == TV_SWORD)
-	inven_init.ident |= ID_SHOW_HITDAM;
+        inven_init.ident |= ID_SHOW_HITDAM;
       (void) inven_carry(&inven_init);
     }
 
@@ -462,7 +464,7 @@ static void char_inven_init()
 }
 
 
-/* Initializes M_LEVEL array for use with PLACE_MONSTER	-RAK-	*/
+/* Initializes M_LEVEL array for use with PLACE_MONSTER -RAK-   */
 static void init_m_level()
 {
   register int i, k;
@@ -484,7 +486,7 @@ static void init_m_level()
 }
 
 
-/* Initializes T_LEVEL array for use with PLACE_OBJECT	-RAK-	*/
+/* Initializes T_LEVEL array for use with PLACE_OBJECT  -RAK-   */
 static void init_t_level()
 {
   register int i, l;
@@ -517,7 +519,7 @@ static void init_t_level()
 
 
 #if (COST_ADJ != 100)
-/* Adjust prices of objects				-RAK-	*/
+/* Adjust prices of objects                             -RAK-   */
 static void price_adjust()
 {
   register int i;

@@ -58,6 +58,7 @@
 #endif
 #endif
 
+#ifndef __linux__ /* unistd.h already provides getuid/getgid on Linux */
 #ifdef VMS
 unsigned int getuid(), getgid();
 #else
@@ -75,6 +76,7 @@ int getuid(), getgid();
 #endif
 #endif
 #endif
+#endif /* __linux__ */
 
 #ifdef USG
 #ifndef ATARIST_MWC
@@ -159,7 +161,7 @@ char *day;
   (void) strcpy(day, tmp);
 }
 
-/* Centers a string within a 31 character string		-JWT-	 */
+/* Centers a string within a 31 character string                -JWT-    */
 static char *center_string(centered_str, in_str)
 char *centered_str;
 char *in_str;
@@ -174,14 +176,14 @@ char *in_str;
 
 
 #ifndef __TURBOC__
-#if (defined(USG) || defined(atarist) || defined(HPUX)) && !defined(VMS)
+#if (defined(USG) || defined(atarist) || defined(HPUX)) && !defined(VMS) && !defined(__linux__)
 #if !defined(AMIGA) && !defined(MAC) && !defined(ATARIST_TC)
 
 #include <sys/stat.h>
 #include <errno.h>
 
-/* The following code is provided especially for systems which		-CJS-
-   have no flock system call. It has never been tested.		*/
+/* The following code is provided especially for systems which          -CJS-
+   have no flock system call. It has never been tested.         */
 
 /* DEBIAN_LINUX defined because fcntlbits.h defines EX and SH the       -RJW-
  * other way.  The comment below indicates that they're not
@@ -193,11 +195,11 @@ char *in_str;
 #define LOCK_SH 1
 #define LOCK_EX 2
 #else /* DEBIAN_LINUX */
-#define LOCK_EX	1
-#define LOCK_SH	2
+#define LOCK_EX 1
+#define LOCK_SH 2
 #endif /* DEBIAN_LINUX */
-#define LOCK_NB	4
-#define LOCK_UN	8
+#define LOCK_NB 4
+#define LOCK_UN 8
 
 /* An flock HACK.  LOCK_SH and LOCK_EX are not distinguished.  DO NOT release
    a lock which you failed to set!  ALWAYS release a lock you set! */
@@ -211,7 +213,7 @@ int f, l;
     return -1;
 #ifdef atarist
   (void) sprintf (lockname, (char *)prefix_file((char *)"moria.%d"),
-		  sbuf.st_ino);
+                  sbuf.st_ino);
 #else
 #ifdef __linux__
   (void) sprintf (lockname, "/tmp/moria.%ld", sbuf.st_ino);
@@ -225,19 +227,19 @@ int f, l;
   while (open (lockname, O_WRONLY|O_CREAT|O_EXCL, 0644) < 0)
     {
       if (errno != EEXIST)
-	return -1;
+        return -1;
       if (stat(lockname, &sbuf) < 0)
-	return -1;
+        return -1;
       /* Locks which last more than 10 seconds get deleted. */
       if (time((long *)0) - sbuf.st_mtime > 10)
-	{
-	  if (unlink(lockname) < 0)
-	    return -1;
-	}
+        {
+          if (unlink(lockname) < 0)
+            return -1;
+        }
       else if (l & LOCK_NB)
-	return -1;
+        return -1;
       else
-	(void) sleep(1);
+        (void) sleep(1);
     }
   return 0;
 }
@@ -286,10 +288,10 @@ int show_player;
     /* An empty score file. */
     ;
   else if ((version_maj != CUR_VERSION_MAJ)
-	   || (version_min > CUR_VERSION_MIN)
-	   || (version_min == CUR_VERSION_MIN && patch_level > PATCH_LEVEL)
-	   || (version_min == 2 && patch_level < 2)
-	   || (version_min < 2))
+           || (version_min > CUR_VERSION_MIN)
+           || (version_min == CUR_VERSION_MIN && patch_level > PATCH_LEVEL)
+           || (version_min == 2 && patch_level < 2)
+           || (version_min < 2))
     {
       msg_print("Sorry. This scorefile is from a different version of \
 umoria.");
@@ -321,35 +323,35 @@ umoria.");
       clear_screen();
       /* Put twenty scores on each page, on lines 2 through 21. */
       while (!feof(highscore_fp) && i < 21)
-	{
-	  /* Only show the entry if show_player false, or if the entry
-	     belongs to the current player.  */
-	  if (! show_player ||
+        {
+          /* Only show the entry if show_player false, or if the entry
+             belongs to the current player.  */
+          if (! show_player ||
 #if defined(unix) || defined(VMS)
-	      score.uid == player_uid
+              score.uid == player_uid
 #else
-	      /* Assume microcomputers should always show every entry. */
-	      TRUE
+              /* Assume microcomputers should always show every entry. */
+              TRUE
 #endif
-	      )
-	    {
-	      (void) sprintf(string,
-			   "%-4d%8ld %-19.19s %c %-10.10s %-7.7s%3d %-22.22s",
-			     rank, score.points, score.name, score.sex,
-			     race[score.race].trace, class[score.class].title,
-			     score.lev, score.died_from);
-	      prt(string, ++i, 0);
-	    }
-	  rank++;
-	  rd_highscore(&score);
-	}
+              )
+            {
+              (void) sprintf(string,
+                           "%-4d%8ld %-19.19s %c %-10.10s %-7.7s%3d %-22.22s",
+                             rank, score.points, score.name, score.sex,
+                             race[score.race].trace, class[score.class].title,
+                             score.lev, score.died_from);
+              prt(string, ++i, 0);
+            }
+          rank++;
+          rd_highscore(&score);
+        }
       prt("Rank  Points Name              Sex Race       Class  Lvl Killed By"
-	  , 0, 0);
+          , 0, 0);
       erase_line (1, 0);
       prt("[Press any key to continue.]", 23, 23);
       input = inkey();
       if (input == ESCAPE)
-	break;
+        break;
     }
 #if defined(MSDOS) || defined(VMS) || defined(AMIGA) || defined(MAC) || defined(APOLLO)
   (void) fclose (highscore_fp);
@@ -432,10 +434,10 @@ umoria.");
   while (!feof(highscore_fp))
     {
       if (score.uid == player_uid && score.birth_date == birth_date
-	  && score.class == py.misc.pclass && score.race == py.misc.prace
-	  && score.sex == (py.misc.male ? 'M' : 'F')
-	  && strcmp (score.died_from, "(saved)"))
-	return TRUE;
+          && score.class == py.misc.pclass && score.race == py.misc.prace
+          && score.sex == (py.misc.male ? 'M' : 'F')
+          && strcmp (score.died_from, "(saved)"))
+        return TRUE;
 
       rd_highscore(&score);
     }
@@ -449,7 +451,7 @@ umoria.");
 
 
 
-/* Prints the gravestone of the character		-RAK-	 */
+/* Prints the gravestone of the character               -RAK-    */
 static void print_tomb()
 {
   vtype str, tmp_str;
@@ -471,7 +473,7 @@ static void print_tomb()
   put_buffer ("/", 5, 11);
   put_buffer ("\\  : _;,,,;_    :   :", 5, 41);
   (void) sprintf (str, "/%s\\,;_          _;,,,;_",
-		  center_string (tmp_str, py.misc.name));
+                  center_string (tmp_str, py.misc.name));
   put_buffer (str, 6, 10);
   put_buffer ("|               the               |   ___", 7, 9);
   if (!total_winner)
@@ -492,7 +494,7 @@ static void print_tomb()
   put_buffer (str, 10, 9);
   (void) sprintf (str, "Level : %d", (int) py.misc.lev);
   (void) sprintf (str,"| %s |          /    \\",
-		  center_string (tmp_str, str));
+                  center_string (tmp_str, str));
   put_buffer (str, 11, 9);
   (void) sprintf(str, "%ld Exp", py.misc.exp);
   (void) sprintf(str,"| %s |          :    :", center_string (tmp_str, str));
@@ -510,13 +512,13 @@ static void print_tomb()
   p[i+1] = '\0';
   (void) sprintf(str, "| %s |", center_string (tmp_str, p));
   put_buffer (str, 16, 9);
-  p[i] = '\0';	 /* strip off the period */
+  p[i] = '\0';   /* strip off the period */
   date(day);
   (void) sprintf(str, "| %s |", center_string (tmp_str, day));
   put_buffer (str, 17, 9);
   put_buffer ("*|   *     *     *    *   *     *  | *", 18, 8);
   put_buffer ("________)/\\\\_)_/___(\\/___(//_\\)/_\\//__\\\\(/_|_)_______",
-	      19, 0);
+              19, 0);
 
  retry:
   flush();
@@ -530,75 +532,75 @@ static void print_tomb()
     {
       func = inkey();
       switch (func)
-	{
-	case 'f': case 'F':
-	  func = 'F';
-	  ok = TRUE;
-	  break;
-	case 'y': case 'Y':
-	  func = 'Y';
-	  ok = TRUE;
-	  break;
-	case 'n': case 'N':
-	  func = 'N';
-	  ok = TRUE;
-	  break;
-	default:
-	  bell();
-	  ok = FALSE;
-	  break;
-	}
+        {
+        case 'f': case 'F':
+          func = 'F';
+          ok = TRUE;
+          break;
+        case 'y': case 'Y':
+          func = 'Y';
+          ok = TRUE;
+          break;
+        case 'n': case 'N':
+          func = 'N';
+          ok = TRUE;
+          break;
+        default:
+          bell();
+          ok = FALSE;
+          break;
+        }
     }
   while (!ok);
   if (func != 'N')
 #else
   put_buffer ("(ESC to abort, return to print on screen, or file name)",
-	      23, 0);
+              23, 0);
   put_buffer ("Character record?", 22, 0);
   if (get_string (str, 22, 18, 60))
 #endif
     {
       for (i = 0; i < INVEN_ARRAY_SIZE; i++)
-	{
-	  known1(&inventory[i]);
-	  known2(&inventory[i]);
-	}
+        {
+          known1(&inventory[i]);
+          known2(&inventory[i]);
+        }
       calc_bonuses ();
 #ifdef MAC
       if (func == 'F')
-	{
-	  if (!file_character())
-	    goto retry;
-	}
+        {
+          if (!file_character())
+            goto retry;
+        }
 #else
       if (str[0])
-	{
-	  if (!file_character (str))
-	    goto retry;
-	}
+        {
+          if (!file_character (str))
+            goto retry;
+        }
 #endif
       else
-	{
-	  clear_screen ();
-	  display_char ();
-	  put_buffer ("Type ESC to skip the inventory:", 23, 0);
-	  if (inkey() != ESCAPE)
-	    {
-	      clear_screen ();
-	      msg_print ("You are using:");
-	      (void) show_equip (TRUE, 0);
-	      msg_print (CNIL);
-	      msg_print ("You are carrying:");
-	      clear_from (1);
-	      (void) show_inven (0, inven_ctr-1, TRUE, 0, CNIL);
-	      msg_print (CNIL);
-	    }
-	}
+        {
+          clear_screen ();
+          display_char ();
+          put_buffer ("Type ESC to skip the inventory:", 23, 0);
+          if (inkey() != ESCAPE)
+            {
+              clear_screen ();
+              msg_print ("You are using:");
+              (void) show_equip (TRUE, 0);
+              msg_print (CNIL);
+              msg_print ("You are carrying:");
+              clear_from (1);
+              (void) show_inven (0, inven_ctr-1, TRUE, 0, CNIL);
+              msg_print (CNIL);
+            }
+        }
     }
 }
 
 
-/* Calculates the total number of points earned		-JWT-	 */
+/* Calculates the total number of points earned         -JWT-    */
 int32 total_points()
 {
   int32 total;
@@ -618,7 +620,7 @@ int32 total_points()
 }
 
 
-/* Enters a players name on the top twenty list		-JWT-	 */
+/* Enters a players name on the top twenty list         -JWT-    */
 static void highscores()
 {
   high_scores old_entry, new_entry, entry;
@@ -666,13 +668,13 @@ are not saved.");
   if ('a' == *tmp)
     {
       if ('n' == *(++tmp))
-	{
-	  tmp++;
-	}
+        {
+          tmp++;
+        }
       while (isspace(*tmp))
-	{
-	  tmp++;
-	}
+        {
+          tmp++;
+        }
     }
   (void) strcpy(new_entry.died_from, tmp);
 
@@ -746,13 +748,13 @@ are not saved.");
     }
   /* Support score files from 5.2.2 to present.  */
   else if ((version_maj != CUR_VERSION_MAJ)
-	   || (version_min > CUR_VERSION_MIN)
-	   || (version_min == CUR_VERSION_MIN && patch_level > PATCH_LEVEL)
-	   || (version_min == 2 && patch_level < 2)
-	   || (version_min < 2))
+           || (version_min > CUR_VERSION_MIN)
+           || (version_min == CUR_VERSION_MIN && patch_level > PATCH_LEVEL)
+           || (version_min == 2 && patch_level < 2)
+           || (version_min < 2))
     {
       /* No need to print a message, a subsequent call to display_scores()
-	 will print a message.  */
+         will print a message.  */
 #if defined(MSDOS) || defined(VMS) || defined(AMIGA) || defined(MAC)
       (void) fclose (highscore_fp);
 #endif
@@ -768,32 +770,32 @@ are not saved.");
   while (!feof(highscore_fp))
     {
       if (new_entry.points >= old_entry.points)
-	break;
+        break;
       /* under unix and VMS, only allow one sex/race/class combo per person,
-	 on single user system, allow any number of entries, but try to
-	 prevent multiple entries per character by checking for case when
-	 birthdate/sex/race/class are the same, and died_from of scorefile
-	 entry is "(saved)" */
+         on single user system, allow any number of entries, but try to
+         prevent multiple entries per character by checking for case when
+         birthdate/sex/race/class are the same, and died_from of scorefile
+         entry is "(saved)" */
       else if (((new_entry.uid != 0 && new_entry.uid == old_entry.uid)
-		|| (new_entry.uid == 0 &&!strcmp(old_entry.died_from,"(saved)")
-		    && new_entry.birth_date == old_entry.birth_date))
-	       && new_entry.sex == old_entry.sex
-	       && new_entry.race == old_entry.race
-	       && new_entry.class == old_entry.class)
-	{
+                || (new_entry.uid == 0 &&!strcmp(old_entry.died_from,"(saved)")
+                    && new_entry.birth_date == old_entry.birth_date))
+               && new_entry.sex == old_entry.sex
+               && new_entry.race == old_entry.race
+               && new_entry.class == old_entry.class)
+        {
 #if defined(MSDOS) || defined(VMS) || defined(AMIGA) || defined(MAC) || defined(APOLLO)
-	  (void) fclose (highscore_fp);
+          (void) fclose (highscore_fp);
 #endif
-	  return;
-	}
+          return;
+        }
       else if (++i >= SCOREFILE_SIZE)
-	{
-	  /* only allow one thousand scores in the score file */
+        {
+          /* only allow one thousand scores in the score file */
 #if defined(MSDOS) || defined(VMS) || defined(AMIGA) || defined(MAC)
-	  (void) fclose (highscore_fp);
+          (void) fclose (highscore_fp);
 #endif
-	  return;
-	}
+          return;
+        }
       curpos = ftell (highscore_fp);
       rd_highscore(&old_entry);
     }
@@ -812,59 +814,59 @@ are not saved.");
     {
       entry = new_entry;
       while (!feof(highscore_fp))
-	{
+        {
 #ifndef BSD4_3
 #if defined(ATARIST_TC) || defined(__TURBOC__)
-	  /* No fseek with negative offset allowed.  */
-	  (void) fseek(highscore_fp, (long)ftell(highscore_fp) -
-		       sizeof(high_scores) - sizeof (char), L_SET);
+          /* No fseek with negative offset allowed.  */
+          (void) fseek(highscore_fp, (long)ftell(highscore_fp) -
+                       sizeof(high_scores) - sizeof (char), L_SET);
 #else
-	  (void) fseek(highscore_fp,
-		       -(long)sizeof(high_scores)-(long)sizeof(char),
-		       L_INCR);
+          (void) fseek(highscore_fp,
+                       -(long)sizeof(high_scores)-(long)sizeof(char),
+                       L_INCR);
 #endif
 #else
-	  (void) fseek(highscore_fp,
-		       -(off_t)sizeof(high_scores)-(off_t)sizeof(char),
-		       L_INCR);
+          (void) fseek(highscore_fp,
+                       -(off_t)sizeof(high_scores)-(off_t)sizeof(char),
+                       L_INCR);
 #endif
-	  wr_highscore(&entry);
-	  /* under unix and VMS, only allow one sex/race/class combo per
-	     person, on single user system, allow any number of entries, but
-	     try to prevent multiple entries per character by checking for
-	     case when birthdate/sex/race/class are the same, and died_from of
-	     scorefile entry is "(saved)" */
-	  if (((new_entry.uid != 0 && new_entry.uid == old_entry.uid)
-		|| (new_entry.uid == 0 &&!strcmp(old_entry.died_from,"(saved)")
-		    && new_entry.birth_date == old_entry.birth_date))
-	      && new_entry.sex == old_entry.sex
-	      && new_entry.race == old_entry.race
-	      && new_entry.class == old_entry.class)
-	    break;
-	  entry = old_entry;
-	  /* must fseek() before can change read/write mode */
+          wr_highscore(&entry);
+          /* under unix and VMS, only allow one sex/race/class combo per
+             person, on single user system, allow any number of entries, but
+             try to prevent multiple entries per character by checking for
+             case when birthdate/sex/race/class are the same, and died_from of
+             scorefile entry is "(saved)" */
+          if (((new_entry.uid != 0 && new_entry.uid == old_entry.uid)
+                || (new_entry.uid == 0 &&!strcmp(old_entry.died_from,"(saved)")
+                    && new_entry.birth_date == old_entry.birth_date))
+              && new_entry.sex == old_entry.sex
+              && new_entry.race == old_entry.race
+              && new_entry.class == old_entry.class)
+            break;
+          entry = old_entry;
+          /* must fseek() before can change read/write mode */
 #ifndef BSD4_3
 #ifdef ATARIST_TC
-	  /* No fseek relative to current position allowed.  */
-	  (void) fseek(highscore_fp, (long)ftell(highscore_fp), L_SET);
+          /* No fseek relative to current position allowed.  */
+          (void) fseek(highscore_fp, (long)ftell(highscore_fp), L_SET);
 #else
-	  (void) fseek(highscore_fp, (long)0, L_INCR);
+          (void) fseek(highscore_fp, (long)0, L_INCR);
 #endif
 #else
-	  (void) fseek(highscore_fp, (off_t)0, L_INCR);
+          (void) fseek(highscore_fp, (off_t)0, L_INCR);
 #endif
-	  curpos = ftell (highscore_fp);
-	  rd_highscore(&old_entry);
-	}
+          curpos = ftell (highscore_fp);
+          rd_highscore(&old_entry);
+        }
       if (feof(highscore_fp))
-	{
+        {
 #ifndef BSD4_3
-	  (void) fseek (highscore_fp, curpos, L_SET);
+          (void) fseek (highscore_fp, curpos, L_SET);
 #else
-	  (void) fseek (highscore_fp, (off_t)curpos, L_SET);
+          (void) fseek (highscore_fp, (off_t)curpos, L_SET);
 #endif
-	  wr_highscore(&entry);
-	}
+          wr_highscore(&entry);
+        }
     }
 
 #if !defined(VMS) && !defined(MSDOS) && !defined(AMIGA) && !defined(MAC) && !defined(APOLLO)
@@ -879,13 +881,13 @@ are not saved.");
 }
 
 
-/* Change the player into a King!			-RAK-	 */
+/* Change the player into a King!                       -RAK-    */
 static void kingly()
 {
   register struct misc *p_ptr;
   register char *p;
 
-  /* Change the character attributes.		 */
+  /* Change the character attributes.            */
   dun_level = 0;
   (void) strcpy(died_from, "Ripe Old Age");
   p_ptr = &py.misc;
@@ -895,7 +897,7 @@ static void kingly()
   p_ptr->max_exp += 5000000L;
   p_ptr->exp = p_ptr->max_exp;
 
-  /* Let the player know that he did good.	 */
+  /* Let the player know that he did good.       */
   clear_screen();
   put_buffer("#", 1, 34);
   put_buffer("#####", 2, 32);
@@ -921,7 +923,7 @@ static void kingly()
 }
 
 
-/* Handles the gravestone end top-twenty routines	-RAK-	 */
+/* Handles the gravestone end top-twenty routines       -RAK-    */
 void exit_game ()
 {
 #ifdef MAC
@@ -929,30 +931,30 @@ void exit_game ()
   enablefilemenu(FALSE);
 #endif
 
-  /* What happens upon dying.				-RAK-	 */
+  /* What happens upon dying.                           -RAK-    */
   msg_print(CNIL);
   flush ();  /* flush all input */
-  nosignals ();	 /* Can't interrupt or suspend. */
+  nosignals ();  /* Can't interrupt or suspend. */
   /* If the game has been saved, then save sets turn back to -1, which
-     inhibits the printing of the tomb.	 */
+     inhibits the printing of the tomb.  */
   if (turn >= 0)
     {
       if (total_winner)
-	kingly();
+        kingly();
       print_tomb();
     }
   if (character_generated && !character_saved)
 #ifdef MAC
-    (void) save_char (TRUE);		/* Save the memory at least. */
+    (void) save_char (TRUE);            /* Save the memory at least. */
 #else
-    (void) save_char ();		/* Save the memory at least. */
+    (void) save_char ();                /* Save the memory at least. */
 #endif
   /* add score to scorefile if applicable */
   if (character_generated)
     {
       /* Clear character_saved, strange thing to do, but it prevents inkey()
-	 from recursively calling exit_game() when there has been an eof
-	 on stdin detected.  */
+         from recursively calling exit_game() when there has been an eof
+         on stdin detected.  */
       character_saved = FALSE;
       highscores();
       display_scores (TRUE);
