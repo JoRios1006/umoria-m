@@ -711,6 +711,7 @@ Constant.h should always be included after config.h,
 #define INVEN_LIGHT 32
 #define INVEN_AUX 33
 
+#define MAX_INVEN_BAG 22
 /* Attribute indexes -CJS- */
 
 #define A_STR 0
@@ -10034,53 +10035,45 @@ void check_strength() {
 /* Add an item to players inventory.  Return the        */
 /* item position for a description if needed.          -RAK-   */
 /* this code must be identical to the inven_check_num() code above */
-int inven_carry(i_ptr)
-inven_type *i_ptr;
-{
-    int locn, i;
-    int typ, subt;
-    inven_type *t_ptr;
-    int known1p, always_known1p;
-#ifdef ATARIST_MWC
-    int32u holder;
-#endif
+bool can_items_stack(inven_type *item, inven_type *bag_slot) {
+    return (item->tval == bag_slot->tval) &&
+           (item->subval == bag_slot->subval) &&
+           (item->subval >= ITEM_SINGLE_STACK_MIN) &&
+           ((int)bag_slot->number + (int)item->number < 256) &&
+           (!(item->subval >= ITEM_GROUP_MIN) || (bag_slot->p1 == item->p1)) &&
+           (known1_p(item) == known1_p(bag_slot));
+};
+int inven_carry(inven_type *i_ptr){
+  int slot = 0;
+  int idx;
+  inven_type *t_ptr;
+  bool should_insert = (i_ptr->tval > t_ptr->tval) || 
+                       (i_ptr->tval == t_ptr->tval && 
+                        i_ptr->subval < t_ptr->subval && 
+                       (object_offset(i_ptr) == -1));
 
-    typ = i_ptr->tval;
-    subt = i_ptr->subval;
-    known1p = known1_p(i_ptr);
-    always_known1p = (object_offset(i_ptr) == -1);
-    /* Now, check to see if player can carry object  */
-    for (locn = 0;; locn++) {
-        t_ptr = &inventory[locn];
-        if ((typ == t_ptr->tval) && (subt == t_ptr->subval) &&
-            (subt >= ITEM_SINGLE_STACK_MIN) &&
-            ((int)t_ptr->number + (int)i_ptr->number < 256) &&
-            ((subt < ITEM_GROUP_MIN) || (t_ptr->p1 == i_ptr->p1)) &&
-            /* only stack if both or neither are identified */
-            (known1p == known1_p(t_ptr))) {
-            t_ptr->number += i_ptr->number;
-            break;
-        }
-        /* For items which are always known1p, i.e. never have a 'color',
-           insert them into the inventory in sorted order.  */
-        else if ((typ == t_ptr->tval && subt < t_ptr->subval &&
-                  always_known1p) ||
-                 (typ > t_ptr->tval)) {
-            for (i = inven_ctr - 1; i >= locn; i--)
-                inventory[i + 1] = inventory[i];
-            inventory[locn] = *i_ptr;
-            inven_ctr++;
-            break;
-        }
+ TRAVERSE_INVENTORY:
+ if(MAX_INVEN_BAG == slot) goto UPDATE_GLOBALS;
+    t_ptr = &inventory[slot];
+    if (can_items_stack(i_ptr, t_ptr)) {
+        t_ptr->number += i_ptr->number;
+        goto UPDATE_GLOBALS; 
     }
-
-    inven_weight += i_ptr->number * i_ptr->weight;
-#ifdef ATARIST_MWC
-    py.flags.status |= (holder = PY_STR_WGT);
-#else
-    py.flags.status |= PY_STR_WGT;
-#endif
-    return locn;
+    if (should_insert) {
+      idx = inven_ctr;
+SHIFT_ITEMS_DOWN:
+        inventory[idx + 1] = inventory[idx];
+    if(idx-- >= slot) goto SHIFT_ITEMS_DOWN;
+INSERT_NEW_ITEM:
+    inventory[slot] = *i_ptr;
+    inven_ctr++;
+        goto UPDATE_GLOBALS;
+    }
+    slot++;
+    goto TRAVERSE_INVENTORY;
+ UPDATE_GLOBALS:    
+inven_weight += i_ptr->number * i_ptr->weight;
+py.flags.status |= PY_STR_WGT;
 }
 
 /* Returns spell chance of failure for spell            -RAK-   */
