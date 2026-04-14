@@ -11382,37 +11382,29 @@ inven_type *inventory_p;
 }
 
 /* Remove "Secret" symbol for identity of plusses			*/
-void known2(inventory_p) inven_type *inventory_p;
-{
+void known2(inven_type *inventory_p){
     unsample(inventory_p);
     inventory_p->ident |= ID_KNOWN2;
 }
 
-int known2_p(inventory_p)
-inven_type *inventory_p;
-{
+int known2_p(inven_type *inventory_p){
     return (inventory_p->ident & ID_KNOWN2);
 }
 
-void clear_known2(inventory_p) inven_type *inventory_p;
-{
+void clear_known2(inven_type *inventory_p){
     inventory_p->ident &= ~ID_KNOWN2;
 }
 
-void clear_empty(inventory_p) inven_type *inventory_p;
-{
+void clear_empty(inven_type *inventory_p){
     inventory_p->ident &= ~ID_EMPTY;
 }
 
-void store_bought(inventory_p) inven_type *inventory_p;
-{
+void store_bought(inven_type *inventory_p){
     inventory_p->ident |= ID_STOREBOUGHT;
     known2(inventory_p);
 }
 
-int store_bought_p(inventory_p)
-inven_type *inventory_p;
-{
+int store_bought_p(inven_type *inventory_p){
     return (inventory_p->ident & ID_STOREBOUGHT);
 }
 
