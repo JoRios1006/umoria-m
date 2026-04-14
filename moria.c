@@ -10078,6 +10078,7 @@ INSERT_NEW_ITEM:
  UPDATE_GLOBALS:    
 inventory_weight += inventory_p->number * inventory_p->weight;
 py.flags.status |= PY_STR_WGT;
+ return slot;
 }
 
 /* Returns spell chance of failure for spell            -RAK-   */
@@ -11832,31 +11833,28 @@ int pref;
     }
 }
 
-void invcopy(to, from_index) inven_type *to;
-int from_index;
-{
-    treasure_type *from;
-
-    from = &object_list[from_index];
-    to->index = from_index;
-    to->name2 = SN_NULL;
-    to->inscrip[0] = '\0';
-    to->flags = from->flags;
-    to->item_category = from->tval;
-    to->tchar = from->tchar;
-    to->p1 = from->p1;
-    to->cost = from->cost;
-    to->item_subcategory = from->subval;
-    to->number = from->number;
-    to->weight = from->weight;
-    to->tohit = from->tohit;
-    to->todam = from->todam;
-    to->ac = from->ac;
-    to->toac = from->toac;
-    to->damage[0] = from->damage[0];
-    to->damage[1] = from->damage[1];
-    to->level = from->level;
-    to->ident = 0;
+void invcopy( inven_type *to, int from_index){
+    treasure_type *from = &object_list[from_index];
+    *to = (inven_type){
+        .index            = from_index,
+        .name2            = SN_NULL,
+        .inscrip          = { '\0' },
+        .flags            = from->flags,
+        .item_category    = from->tval,
+        .tchar            = from->tchar,
+        .p1               = from->p1,
+        .cost             = from->cost,
+        .item_subcategory = from->subval,
+        .number           = from->number,
+        .weight           = from->weight,
+        .tohit            = from->tohit,
+        .todam            = from->todam,
+        .ac               = from->ac,
+        .toac             = from->toac,
+        .damage           = { from->damage[0], from->damage[1] },
+        .level            = from->level,
+        .ident            = 0
+    };
 }
 
 /* Describe number of remaining charges.		-RAK-	*/
