@@ -1143,7 +1143,7 @@ typedef uint_least8_t int8u;
 typedef int_least16_t int16;
 typedef uint_least16_t int16u;
 typedef int_least32_t int32;
-typedef uint_least32_t int32u;
+typedef uint_least32_t u32i;
 #endif
 
 /* some machines will not accept 'signed char' as a type, and some accept it
@@ -1172,8 +1172,8 @@ typedef char stat_type[7];
 
 typedef struct creature_type {
     char *name;      /* Descrip of creature	*/
-    int32u cmove;    /* Bit field		*/
-    int32u spells;   /* Creature spells	*/
+    u32i cmove;    /* Bit field		*/
+    u32i spells;   /* Creature spells	*/
     int16u cdefense; /* Bit field		*/
     int16u mexp;     /* Exp value for kill	*/
     int8u sleep;     /* Inactive counter/10	*/
@@ -1196,8 +1196,8 @@ typedef struct m_attack_type /* Monster attack and damage types */
 
 typedef struct recall_type /* Monster memories. -CJS- */
 {
-    int32u r_cmove;
-    int32u r_spells;
+    u32i r_cmove;
+    u32i r_spells;
     int16u r_kills, r_deaths;
     int16u r_cdefense;
     int8u r_wake, r_ignore;
@@ -1220,7 +1220,7 @@ typedef struct monster_type {
 
 typedef struct treasure_type {
     char *name;      /* Object name		*/
-    int32u flags;    /* Special flags	*/
+    u32i flags;    /* Special flags	*/
     int8u tval;      /* Category number	*/
     int8u tchar;     /* Character representation*/
     int16 p1;        /* Misc. use variable	*/
@@ -1247,7 +1247,7 @@ typedef struct inven_type {
     int16u index;               /* Index to object_list */
     int8u name2;                /* Object special name  */
     char inscrip[INSCRIP_SIZE]; /* Object inscription   */
-    int32u flags;               /* Special flags	*/
+    u32i flags;               /* Special flags	*/
     int8u item_category;                 /* Category number	*/
     int8u tchar;                /* Character representation*/
     int16 p1;                   /* Misc. use variable	*/
@@ -1315,7 +1315,7 @@ typedef struct player_type {
         int8u use_stat[6]; /* What is used */
     } stats;
     struct flags {
-        int32u status;         /* Status of player    */
+        u32i status;         /* Status of player    */
         int16 rest;            /* Rest counter	       */
         int16 blind;           /* Blindness counter   */
         int16 paralysis;       /* Paralysis counter   */
@@ -1608,8 +1608,8 @@ extern FILE *highscore_fp;      /* High score file pointer */
 extern int command_count;       /* Repetition of commands. -CJS- */
 extern int default_dir;         /* Use last direction in repeated commands */
 extern int16 noscore;           /* Don't score this game. -CJS- */
-extern int32u randes_seed;      /* For encoding colors */
-extern int32u town_seed;        /* Seed for town genera*/
+extern u32i randes_seed;      /* For encoding colors */
+extern u32i town_seed;        /* Seed for town genera*/
 extern int16 dun_level;         /* Cur dungeon level   */
 extern int16 missile_ctr;       /* Counter for missiles */
 extern int msg_flag;            /* Set with first msg  */
@@ -1652,7 +1652,7 @@ extern char *player_title[MAX_CLASS][MAX_PLAYER_LEVEL];
 extern race_type race[MAX_RACES];
 extern background_type background[MAX_BACKGROUND];
 #endif
-extern int32u player_exp[MAX_PLAYER_LEVEL];
+extern u32i player_exp[MAX_PLAYER_LEVEL];
 extern int16u player_hp[MAX_PLAYER_LEVEL];
 extern int16 char_row;
 extern int16 char_col;
@@ -1669,9 +1669,9 @@ extern spell_type (*magic_spell)[31];
 extern spell_type magic_spell[MAX_CLASS - 1][31];
 #endif
 extern char *spell_names[62];
-extern int32u can_cast_spells;   /* Bit field for spells learnt -CJS- */
-extern int32u spell_worked;    /* Bit field for spells tried -CJS- */
-extern int32u spell_forgotten; /* Bit field for spells forgotten -JEW- */
+extern u32i can_cast_spells;   /* Bit field for spells learnt -CJS- */
+extern u32i spell_worked;    /* Bit field for spells tried -CJS- */
+extern u32i spell_forgotten; /* Bit field for spells forgotten -JEW- */
 extern int8u spell_order[32];  /* remember order that spells are learned in */
 extern int16u player_init[MAX_CLASS][5];
 extern int16 total_winner;
@@ -2571,7 +2571,7 @@ void delete_monster();
 void fix1_delete_monster();
 void fix2_delete_monster();
 int delete_object();
-int32u monster_death();
+u32i monster_death();
 int mon_take_hit();
 void py_attack();
 void move_char();
@@ -2626,7 +2626,7 @@ int bool_roff_recall();
 int roff_recall();
 
 /* rnd.c */
-int32u get_rnd_seed();
+u32i get_rnd_seed();
 void set_rnd_seed();
 int32 rnd();
 
@@ -2849,8 +2849,8 @@ int32 max_score = 0;
 int character_generated = 0; /* don't save score until char gen finished */
 int character_saved = 0;     /* prevents save on kill after save_char() */
 FILE *highscore_fp;          /* File pointer to high score file */
-int32u randes_seed;          /* for restarting randes_state */
-int32u town_seed;            /* for restarting town_seed */
+u32i randes_seed;          /* for restarting randes_state */
+u32i town_seed;            /* for restarting town_seed */
 int16 cur_height, cur_width; /* Cur dungeon size    */
 int16 dun_level = 0;         /* Cur dungeon level   */
 int16 missile_ctr = 0;       /* Counter for missiles */
@@ -3284,11 +3284,11 @@ Stephen K. Park and Keith W. Miller, "Random Number Generators:
 #define RNG_R 2836L   /* m mod a */
 
 /* 32 bit seed */
-static int32u rnd_seed;
+static u32i rnd_seed;
 
-int32u get_rnd_seed() { return rnd_seed; }
+u32i get_rnd_seed() { return rnd_seed; }
 
-void set_rnd_seed(seedval) int32u seedval;
+void set_rnd_seed(seedval) u32i seedval;
 {
     /* set seed to value between 1 and m-1 */
 
@@ -6623,9 +6623,9 @@ static void compact_objects(void);
 #endif
 
 /* gets a new random seed for the random number generator */
-void init_seeds(seed) int32u seed;
+void init_seeds(seed) u32i seed;
 {
-    int32u clock_var;
+    u32i clock_var;
 
     if (seed == 0)
 #ifdef MAC
@@ -6648,10 +6648,10 @@ void init_seeds(seed) int32u seed;
 }
 
 /* holds the previous rnd state */
-static int32u old_seed;
+static u32i old_seed;
 
 /* change to different random number generator state */
-void set_seed(seed) int32u seed;
+void set_seed(seed) u32i seed;
 {
     old_seed = get_rnd_seed();
 
@@ -6755,10 +6755,10 @@ int mean, stand;
 /* Returns position of first set bit			-RAK-	*/
 /*     and clears that bit */
 int bit_pos(test)
-int32u *test;
+u32i *test;
 {
     int i;
-    int32u mask = 0x1;
+    u32i mask = 0x1;
 
     for (i = 0; i < sizeof(*test) * 8; i++) {
         if (*test & mask) {
@@ -9569,7 +9569,7 @@ int todam_adj() {
 
 /* Prints character-screen info                         -RAK-   */
 void prt_stat_block() {
-    int32u status;
+    u32i status;
     struct misc *m_ptr;
     int i;
 
@@ -10241,147 +10241,73 @@ int first_spell;
 
 /* calculate number of spells player should have, and learn forget spells
    until that number is met -JEW- */
-void calc_spells(stat) int stat;
-{
-    int i;
-    int32u mask;
-    int32u spell_flag;
-    int j, offset;
-    int num_allowed, new_spells, num_known, levels;
+void calc_spells(int stat){
+    struct misc *player_p = &py.misc;
+    int i, j, new_spells, num_known;
+    u32i mask;
     vtype tmp_str;
-    char *p;
-    struct misc *p_ptr;
-    spell_type *msp_ptr;
+    
+    char *label = (stat == A_INT) ? "spell" : "prayer";
+    int offset  = (stat == A_INT) ? SPELL_OFFSET : PRAYER_OFFSET;
+    spell_type *spells = &magic_spell[player_p->pclass - 1][0];
 
-    p_ptr = &py.misc;
-    msp_ptr = &magic_spell[p_ptr->pclass - 1][0];
-    if (stat == A_INT) {
-        p = "spell";
-        offset = SPELL_OFFSET;
-    } else {
-        p = "prayer";
-        offset = PRAYER_OFFSET;
-    }
-
-    /* check to see if know any spells greater than level, eliminate them */
-    for (i = 31, mask = 0x80000000L; mask; mask >>= 1, i--)
-        if (mask & can_cast_spells) {
-            if (msp_ptr[i].slevel > p_ptr->level) {
-                can_cast_spells &= ~mask;
-                spell_forgotten |= mask;
-                (void)sprintf(tmp_str, "You have forgotten the %s of %s.", p,
-                              spell_names[i + offset]);
-                msg_print(tmp_str);
-            } else
-                break;
+    for (i = 31; i >= 0; i--) {
+        mask = 1L << i;
+        if ((mask & can_cast_spells) && (spells[i].slevel > player_p->level)) {
+            can_cast_spells &= ~mask;
+            spell_forgotten |= mask;
+            sprintf(tmp_str, "You have forgotten the %s of %s.", label, spell_names[i + offset]);
+            msg_print(tmp_str);
         }
-
-    /* calc number of spells allowed */
-    levels = p_ptr->level - class[p_ptr->pclass].first_spell_lev + 1;
-    switch (get_mana_multiplier(stat)) {
-    case 0:
-        num_allowed = 0;
-        break;
-    case 1:
-    case 2:
-    case 3:
-        num_allowed = 1 * levels;
-        break;
-    case 4:
-    case 5:
-        num_allowed = 3 * levels / 2;
-        break;
-    case 6:
-        num_allowed = 2 * levels;
-        break;
-    case 7:
-        num_allowed = 5 * levels / 2;
-        break;
     }
+
+    static const int capacity_mults[] = { 0, 2, 2, 2, 3, 3, 4, 5 };
+    const int levels = player_p->level - class[player_p->pclass].first_spell_lev + 1;
+    const int num_allowed = (capacity_mults[get_mana_multiplier(stat)] * levels) / 2;
 
     num_known = 0;
-    for (mask = 0x1; mask; mask <<= 1)
-        if (mask & can_cast_spells)
-            num_known++;
+    for (mask = 0x1; mask; mask <<= 1) {
+        if (mask & can_cast_spells) num_known++;
+    }
     new_spells = num_allowed - num_known;
 
     if (new_spells > 0) {
-        /* remember forgotten spells while forgotten spells exist of new_spells
-           positive, remember the spells in the order that they were learned */
-        for (i = 0;
-             (spell_forgotten && new_spells && (i < num_allowed) && (i < 32));
-             i++) {
-            /* j is (i+1)th spell learned */
+        for (i = 0; (spell_forgotten && new_spells && i < num_allowed && i < 32); i++) {
             j = spell_order[i];
-            /* shifting by amounts greater than number of bits in long gives
-               an undefined result, so don't shift for unknown spells */
-            if (j == 99)
-                mask = 0x0;
-            else
-                mask = 1L << j;
-            if (mask & spell_forgotten) {
-                if (msp_ptr[j].slevel <= p_ptr->level) {
-                    new_spells--;
-                    spell_forgotten &= ~mask;
-                    can_cast_spells |= mask;
-                    (void)sprintf(tmp_str, "You have remembered the %s of %s.",
-                                  p, spell_names[j + offset]);
-                    msg_print(tmp_str);
-                } else
-                    num_allowed++;
+            if (j == 99) continue;
+            mask = 1L << j;
+
+            if ((mask & spell_forgotten) && (spells[j].slevel <= player_p->level)) {
+                new_spells--;
+                spell_forgotten &= ~mask;
+                can_cast_spells  |= mask;
+                sprintf(tmp_str, "You have remembered the %s of %s.", label, spell_names[j + offset]);
+                msg_print(tmp_str);
             }
         }
-
-        if (new_spells > 0) {
-            /* determine which spells player can learn */
-            /* must check all spells here, in gain_spell() we actually check
-               if the books are present */
-            spell_flag = 0x7FFFFFFFL & ~can_cast_spells;
-
-            mask = 0x1;
-            i = 0;
-            for (j = 0, mask = 0x1; spell_flag; mask <<= 1, j++)
-                if (spell_flag & mask) {
-                    spell_flag &= ~mask;
-                    if (msp_ptr[j].slevel <= p_ptr->level)
-                        i++;
-                }
-
-            if (new_spells > i)
-                new_spells = i;
-        }
     } else if (new_spells < 0) {
-        /* forget spells until new_spells zero or no more spells know, spells
-           are forgotten in the opposite order that they were learned */
-        for (i = 31; new_spells && can_cast_spells; i--) {
-            /* j is the (i+1)th spell learned */
+        for (i = 31; new_spells && can_cast_spells && i >= 0; i--) {
             j = spell_order[i];
-            /* shifting by amounts greater than number of bits in long gives
-               an undefined result, so don't shift for unknown spells */
-            if (j == 99)
-                mask = 0x0;
-            else
-                mask = 1L << j;
+            if (j == 99) continue;
+            mask = 1L << j;
+
             if (mask & can_cast_spells) {
                 can_cast_spells &= ~mask;
                 spell_forgotten |= mask;
                 new_spells++;
-                (void)sprintf(tmp_str, "You have forgotten the %s of %s.", p,
-                              spell_names[j + offset]);
+                sprintf(tmp_str, "You have forgotten the %s of %s.", label, spell_names[j + offset]);
                 msg_print(tmp_str);
             }
         }
-
         new_spells = 0;
     }
 
     if (new_spells != py.flags.new_spells) {
         if (new_spells > 0 && py.flags.new_spells == 0) {
-            (void)sprintf(tmp_str, "You can learn some new %ss now.", p);
+            sprintf(tmp_str, "You can learn some new %ss now.", label);
             msg_print(tmp_str);
         }
-
-        py.flags.new_spells = new_spells;
+        py.flags.new_spells = (new_spells < 0) ? 0 : new_spells;
         py.flags.status |= PY_STUDY;
     }
 }
@@ -10392,7 +10318,7 @@ void gain_spells() {
     int stat, diff_spells, new_spells;
     int spells[31], offset, last_known;
     int i, j;
-    int32u spell_flag, mask;
+    u32i spell_flag, mask;
     vtype tmp_str;
     struct misc *p_ptr;
     spell_type *msp_ptr;
@@ -11992,10 +11918,10 @@ int mon_num;
     recall_type *mp;
     creature_type *cp;
     int i, k;
-    int32u j;
+    u32i j;
     int32 templong;
     int mspeed;
-    int32u rcmove, rspells;
+    u32i rcmove, rspells;
     int16u rcdefense;
     recall_type save_mem;
 #ifdef ATARIST_MWC
@@ -12684,7 +12610,7 @@ char *player_title[MAX_CLASS][MAX_PLAYER_LEVEL] = {
 #endif
 
 /* Base experience levels, may be adjusted up for race and/or class*/
-int32u player_exp[MAX_PLAYER_LEVEL] = {
+u32i player_exp[MAX_PLAYER_LEVEL] = {
     10,      25,       45,       70,       100,      140,     200,
     280,     380,      500,      650,      850,      1100,    1400,
     1800,    2300,     2900,     3600,     4400,     5400,    6800,
@@ -12894,9 +12820,9 @@ int16 class_level_adj[MAX_CLASS][MAX_LEV_ADJ] = {
     /* Ranger  */ {3, 4, 3, 3, 3},
     /* Paladin */ {3, 3, 3, 2, 3}};
 
-int32u can_cast_spells = 0;   /* bit mask of spells learned */
-int32u spell_worked = 0;    /* bit mask of spells tried and worked */
-int32u spell_forgotten = 0; /* bit mask of spells learned but forgotten */
+u32i can_cast_spells = 0;   /* bit mask of spells learned */
+u32i spell_worked = 0;    /* bit mask of spells tried and worked */
+u32i spell_forgotten = 0; /* bit mask of spells learned but forgotten */
 int8u spell_order[32];      /* order spells learned/remembered/forgotten */
 
 /* Warriors don't have spells, so there is no entry for them.  Note that
@@ -13307,7 +13233,7 @@ static void get_class() {
     player_type *p_ptr;
     class_type *c_ptr;
     char tmp_str[80], s;
-    int32u mask;
+    u32i mask;
 
     for (j = 0; j < MAX_CLASS; j++)
         cl[j] = 0;
@@ -16747,7 +16673,7 @@ inven_type *t_ptr;
 
 /* Examine a Book					-RAK-	*/
 static void examine_book() {
-    int32u j;
+    u32i j;
     int i, k, item_val, flag;
     int spell_index[31];
     inven_type *inventory_p;
@@ -17827,10 +17753,10 @@ static void make_attack(monptr) int monptr;
 /* Make the move if possible, five choices		-RAK-	*/
 static void make_move(monptr, mm, rcmove) int monptr;
 int *mm;
-int32u *rcmove;
+u32i *rcmove;
 {
     int i, newy, newx, do_turn, do_move, stuck_door;
-    int32u movebits;
+    u32i movebits;
     cave_type *c_ptr;
     monster_type *m_ptr;
     inven_type *t_ptr;
@@ -18031,7 +17957,7 @@ int32u *rcmove;
 static void mon_cast_spell(monptr, took_turn) int monptr;
 int *took_turn;
 {
-    int32u i;
+    u32i i;
     int y, x, chance, thrown_spell, r1;
     int k;
     int spell_choice[30];
@@ -18335,7 +18261,7 @@ int monptr;
 
 /* Move the critters about the dungeon			-RAK-	*/
 static void mon_move(monptr, rcmove) int monptr;
-int32u *rcmove;
+u32i *rcmove;
 {
     int i, j;
     int k, move_test, dir;
@@ -18542,7 +18468,7 @@ void creatures(attack) int attack;
     int i, k;
     monster_type *m_ptr;
     recall_type *r_ptr;
-    int32u notice, rcmove;
+    u32i notice, rcmove;
     int wake, ignore;
     vtype cdesc;
 #ifdef ATARIST_MWC
@@ -19615,7 +19541,7 @@ void exit_game() {
 
 /* Eat some food.					-RAK-	*/
 void eat() {
-    int32u i;
+    u32i i;
     int j, k, item_val, ident;
     struct flags *f_ptr;
     struct misc *m_ptr;
@@ -20144,7 +20070,7 @@ int factor;
 
 /* Recalculate the effect of all the stuff we use.		  -CJS- */
 void calc_bonuses() {
-    int32u item_flags;
+    u32i item_flags;
 #if defined(ATARIST_MWC)
     int32u holder; /* to avoid a compiler bug */
 #endif
@@ -22297,7 +22223,7 @@ void area_affect(dir, y, x) int dir, y, x;
 /* Note: This routine affects magical AC bonuses so that stores	  */
 /*	 can detect the damage.					 */
 int minus_ac(typ_dam)
-int32u typ_dam;
+u32i typ_dam;
 {
     int i, j;
     int tmp[6], minus;
@@ -22361,7 +22287,7 @@ void corrode_gas(kb_str) char *kb_str;
 #ifdef ATARIST_MWC
     if (!minus_ac((int32u)(holder = TR_RES_ACID)))
 #else
-    if (!minus_ac((int32u)TR_RES_ACID))
+    if (!minus_ac((u32i)TR_RES_ACID))
 #endif
         take_hit(randint(8), kb_str);
     if (inven_damage(set_corrodes, 5) > 0)
@@ -22427,7 +22353,7 @@ char *kb_str;
 #ifdef ATARIST_MWC
     if (minus_ac((int32u)(holder = TR_RES_ACID)))
 #else
-    if (minus_ac((int32u)TR_RES_ACID))
+    if (minus_ac((u32i)TR_RES_ACID))
 #endif
         flag = 1;
     if (py.flags.acid_resist)
@@ -22672,7 +22598,7 @@ char *prompt;
 int item_val;
 int *sn, *sc;
 {
-    int32u j;
+    u32i j;
     int i, k;
     int spell[31], result, first_spell;
     spell_type *s_ptr;
@@ -22904,12 +22830,12 @@ int y, x;
 /* based on flags set in the main creature record		 */
 /* Returns a mask of bits from the given flags which indicates what the
    monster is seen to have dropped.  This may be added to monster memory. */
-int32u monster_death(y, x, flags)
+u32i monster_death(y, x, flags)
 int y, x;
-int32u flags;
+u32i flags;
 {
     int i, number;
-    int32u dump, res;
+    u32i dump, res;
 #if defined(ATARIST_MWC)
     int32u holder; /* avoid a compiler bug */
 #endif
@@ -23029,13 +22955,13 @@ int32u flags;
 int mon_take_hit(monptr, dam)
 int monptr, dam;
 {
-    int32u i;
+    u32i i;
     int32 new_exp, new_exp_frac;
     monster_type *m_ptr;
     struct misc *p_ptr;
     creature_type *c_ptr;
     int m_take_hit;
-    int32u tmp;
+    u32i tmp;
 #ifdef ATARIST_MWC
     int32u holder;
 #endif
@@ -24657,7 +24583,7 @@ void bash() {
 
 /* Potions for the quaffing				-RAK-	*/
 void quaff() {
-    int32u i, l;
+    u32i i, l;
     int j, k, item_val;
     int ident;
     inven_type *inventory_p;
@@ -25036,7 +24962,7 @@ void quaff() {
 
 /* Scrolls for the reading				-RAK-	*/
 void read_scroll() {
-    int32u i;
+    u32i i;
     int j, k, item_val, y, x;
     int tmp[6], flag, used_up;
     bigvtype out_val, tmp_str;
@@ -26121,7 +26047,7 @@ int dir, y, x;
 
 /* Return flags for given type area affect		-RAK-	*/
 void get_flags(typ, weapon_type, harm_type, destroy) int typ;
-int32u *weapon_type;
+u32i *weapon_type;
 int *harm_type;
 int (**destroy)();
 {
@@ -26171,7 +26097,7 @@ void fire_bolt(typ, dir, y, x, dam, bolt_typ) int typ, dir, y, x, dam;
 char *bolt_typ;
 {
     int i, oldy, oldx, dist, flag;
-    int32u weapon_type;
+    u32i weapon_type;
     int harm_type;
     int (*dummy)();
     cave_type *c_ptr;
@@ -26248,7 +26174,7 @@ char *descrip;
     int i, j;
     int dam, max_dis, thit, tkill, k, tmp;
     int oldy, oldx, dist, flag, harm_type;
-    int32u weapon_type;
+    u32i weapon_type;
     int (*destroy)();
     cave_type *c_ptr;
     monster_type *m_ptr;
@@ -26367,8 +26293,8 @@ int monptr;
 {
     int i, j;
     int dam, max_dis, harm_type;
-    int32u weapon_type;
-    int32u tmp, treas;
+    u32i weapon_type;
+    u32i tmp, treas;
     int (*destroy)();
     cave_type *c_ptr;
     monster_type *m_ptr;
@@ -28068,7 +27994,7 @@ void pray() {
 
 /* Wands for the aiming.				*/
 void aim() {
-    int32u i;
+    u32i i;
     int l, ident;
     int item_val, j, k, chance, dir;
     inven_type *inventory_p;
@@ -28260,7 +28186,7 @@ void aim() {
 
 /* Use a staff.					-RAK-	*/
 void use() {
-    int32u i;
+    u32i i;
     int j, k, item_val, chance, y, x;
     int ident;
     struct misc *m_ptr;
@@ -28535,7 +28461,7 @@ char *malloc();
 static FILE *fileptr;
 static int8u xor_byte;
 static int from_savefile; /* can overwrite old savefile when save */
-static int32u start_time; /* time that play started */
+static u32i start_time; /* time that play started */
 
 /* This save package was brought to by			-JWT-
    and							-RAK-
@@ -28544,7 +28470,7 @@ static int32u start_time; /* time that play started */
 /* and completely rewritten again! for portability by -JEW- */
 
 static int sv_write() {
-    int32u l;
+    u32i l;
     int i, j;
     int count;
     int8u char_tmp, prev_char;
@@ -28614,9 +28540,9 @@ static int sv_write() {
     m_ptr = &py.misc;
     wr_string(m_ptr->name);
     wr_byte(m_ptr->male);
-    wr_long((int32u)m_ptr->au);
-    wr_long((int32u)m_ptr->max_exp);
-    wr_long((int32u)m_ptr->exp);
+    wr_long((u32i)m_ptr->au);
+    wr_long((u32i)m_ptr->max_exp);
+    wr_long((u32i)m_ptr->exp);
     wr_short(m_ptr->exp_frac);
     wr_short(m_ptr->age);
     wr_short(m_ptr->ht);
@@ -28705,7 +28631,7 @@ static int sv_write() {
     wr_byte(f_ptr->new_spells);
 
     wr_short((int16u)missile_ctr);
-    wr_long((int32u)turn);
+    wr_long((u32i)turn);
     wr_short((int16u)inventory_counter);
     for (i = 0; i < inventory_counter; i++)
         wr_item(&inventory[i]);
@@ -28732,14 +28658,14 @@ static int sv_write() {
 
     for (i = 0; i < MAX_STORES; i++) {
         st_ptr = &store[i];
-        wr_long((int32u)st_ptr->store_open);
+        wr_long((u32i)st_ptr->store_open);
         wr_short((int16u)st_ptr->insult_cur);
         wr_byte(st_ptr->owner);
         wr_byte(st_ptr->store_ctr);
         wr_short(st_ptr->good_buy);
         wr_short(st_ptr->bad_buy);
         for (j = 0; j < st_ptr->store_ctr; j++) {
-            wr_long((int32u)st_ptr->store_inven[j].scost);
+            wr_long((u32i)st_ptr->store_inven[j].scost);
             wr_item(&st_ptr->store_inven[j].sitem);
         }
     }
@@ -28765,7 +28691,7 @@ static int sv_write() {
     wr_long(l);
 
     /* starting with 5.2.2, put the birth_date in the savefile */
-    wr_long((int32u)birth_date);
+    wr_long((u32i)birth_date);
 
     /* only level specific info follows, this allows characters to be
        resurrected, the dungeon level info is not needed for a resurrection */
@@ -29067,7 +28993,7 @@ int *generate;
 {
     int i, j;
     int fd, c, ok, total_count;
-    int32u l, age, time_saved;
+    u32i l, age, time_saved;
     vtype temp;
     int16u int16u_tmp;
     cave_type *c_ptr;
@@ -29259,9 +29185,9 @@ int *generate;
             m_ptr = &py.misc;
             rd_string(m_ptr->name);
             rd_byte(&m_ptr->male);
-            rd_long((int32u *)&m_ptr->au);
-            rd_long((int32u *)&m_ptr->max_exp);
-            rd_long((int32u *)&m_ptr->exp);
+            rd_long((u32i *)&m_ptr->au);
+            rd_long((u32i *)&m_ptr->max_exp);
+            rd_long((u32i *)&m_ptr->exp);
             rd_short(&m_ptr->exp_frac);
             rd_short(&m_ptr->age);
             rd_short(&m_ptr->ht);
@@ -29350,7 +29276,7 @@ int *generate;
             rd_byte(&f_ptr->new_spells);
 
             rd_short((int16u *)&missile_ctr);
-            rd_long((int32u *)&turn);
+            rd_long((u32i *)&turn);
             rd_short((int16u *)&inventory_counter);
             if (inventory_counter > INVEN_WIELD)
                 goto error;
@@ -29379,7 +29305,7 @@ int *generate;
             if ((version_min >= 2) || (version_min == 1 && patch_level >= 3))
                 for (i = 0; i < MAX_STORES; i++) {
                     st_ptr = &store[i];
-                    rd_long((int32u *)&st_ptr->store_open);
+                    rd_long((u32i *)&st_ptr->store_open);
                     rd_short((int16u *)&st_ptr->insult_cur);
                     rd_byte(&st_ptr->owner);
                     rd_byte(&st_ptr->store_ctr);
@@ -29388,7 +29314,7 @@ int *generate;
                     if (st_ptr->store_ctr > STORE_INVEN_MAX)
                         goto error;
                     for (j = 0; j < st_ptr->store_ctr; j++) {
-                        rd_long((int32u *)&st_ptr->store_inven[j].scost);
+                        rd_long((u32i *)&st_ptr->store_inven[j].scost);
                         rd_item(&st_ptr->store_inven[j].sitem);
                     }
                 }
@@ -29400,12 +29326,12 @@ int *generate;
                 rd_string(died_from);
 
             if ((version_min >= 3) || (version_min == 2 && patch_level >= 2))
-                rd_long((int32u *)&max_score);
+                rd_long((u32i *)&max_score);
             else
                 max_score = 0;
 
             if ((version_min >= 3) || (version_min == 2 && patch_level >= 2))
-                rd_long((int32u *)&birth_date);
+                rd_long((u32i *)&birth_date);
             else
 #ifdef MAC
                 birth_date = time((time_t *)0);
@@ -29536,7 +29462,7 @@ int *generate;
         if ((version_min == 1 && patch_level < 3) || (version_min == 0))
             for (i = 0; i < MAX_STORES; i++) {
                 st_ptr = &store[i];
-                rd_long((int32u *)&st_ptr->store_open);
+                rd_long((u32i *)&st_ptr->store_open);
                 rd_short((int16u *)&st_ptr->insult_cur);
                 rd_byte(&st_ptr->owner);
                 rd_byte(&st_ptr->store_ctr);
@@ -29545,7 +29471,7 @@ int *generate;
                 if (st_ptr->store_ctr > STORE_INVEN_MAX)
                     goto error;
                 for (j = 0; j < st_ptr->store_ctr; j++) {
-                    rd_long((int32u *)&st_ptr->store_inven[j].scost);
+                    rd_long((u32i *)&st_ptr->store_inven[j].scost);
                     rd_item(&st_ptr->store_inven[j].sitem);
                 }
             }
@@ -29678,7 +29604,7 @@ static void wr_short(s) int16u s;
     DEBUG(fprintf(logfile, " %02X = %d\n", (int)xor_byte, (int)s));
 }
 
-static void wr_long(l) int32u l;
+static void wr_long(l) u32i l;
 {
     xor_byte ^= (l & 0xFF);
     (void)putc((int)xor_byte, fileptr);
@@ -29753,7 +29679,7 @@ static void wr_item(item) inven_type *item;
     wr_byte(item->item_category);
     wr_byte(item->tchar);
     wr_short((int16u)item->p1);
-    wr_long((int32u)item->cost);
+    wr_long((u32i)item->cost);
     wr_byte(item->item_subcategory);
     wr_byte(item->number);
     wr_short(item->weight);
@@ -29805,20 +29731,20 @@ static void rd_short(ptr) int16u *ptr;
                   (int)s));
 }
 
-static void rd_long(ptr) int32u *ptr;
+static void rd_long(ptr) u32i *ptr;
 {
-    int32u l;
+    u32i l;
     int8u c;
 
     c = (getc(fileptr) & 0xFF);
     l = c ^ xor_byte;
     xor_byte = (getc(fileptr) & 0xFF);
-    l |= (int32u)(c ^ xor_byte) << 8;
+    l |= (u32i)(c ^ xor_byte) << 8;
     DEBUG(fprintf(logfile, "LONG:  %02X %02X ", (int)c, (int)xor_byte));
     c = (getc(fileptr) & 0xFF);
-    l |= (int32u)(c ^ xor_byte) << 16;
+    l |= (u32i)(c ^ xor_byte) << 16;
     xor_byte = (getc(fileptr) & 0xFF);
-    l |= (int32u)(c ^ xor_byte) << 24;
+    l |= (u32i)(c ^ xor_byte) << 24;
     *ptr = l;
     DEBUG(
         fprintf(logfile, "%02X %02X = %ld\n", (int)c, (int)xor_byte, (long)l));
@@ -29889,7 +29815,7 @@ static void rd_item(item) inven_type *item;
     rd_byte(&item->item_category);
     rd_byte(&item->tchar);
     rd_short((int16u *)&item->p1);
-    rd_long((int32u *)&item->cost);
+    rd_long((u32i *)&item->cost);
     rd_byte(&item->item_subcategory);
     rd_byte(&item->number);
     rd_short(&item->weight);
@@ -29932,8 +29858,8 @@ void wr_highscore(score) high_scores *score;
     /* Save the encryption byte for robustness.  */
     wr_byte(xor_byte);
 
-    wr_long((int32u)score->points);
-    wr_long((int32u)score->birth_date);
+    wr_long((u32i)score->points);
+    wr_long((u32i)score->birth_date);
     wr_short((int16u)score->uid);
     wr_short((int16u)score->mhp);
     wr_short((int16u)score->chp);
@@ -29955,8 +29881,8 @@ void rd_highscore(score) high_scores *score;
     /* Read the encryption byte.  */
     rd_byte(&xor_byte);
 
-    rd_long((int32u *)&score->points);
-    rd_long((int32u *)&score->birth_date);
+    rd_long((u32i *)&score->points);
+    rd_long((u32i *)&score->birth_date);
     rd_short((int16u *)&score->uid);
     rd_short((int16u *)&score->mhp);
     rd_short((int16u *)&score->chp);
@@ -42765,7 +42691,7 @@ int argc;
 char *argv[];
 #endif
 {
-    int32u seed;
+    u32i seed;
     int generate;
     int result;
 #ifndef MAC
