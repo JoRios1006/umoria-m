@@ -10044,6 +10044,7 @@ static inline bool can_items_stack(inven_type *item, inven_type *bag_slot) {
 };
 
 int inven_carry(inven_type *inventory_p){
+  bool added = 0;
   int slot = 0;
   int idx;
   inven_type *current_item_p;
@@ -10071,12 +10072,13 @@ SHIFT_ITEMS_DOWN:
 INSERT_NEW_ITEM:
     inventory[slot] = *inventory_p;
     inventory_counter++;
+    added = !added;
         goto UPDATE_GLOBALS;
     }
     slot++;
     goto TRAVERSE_INVENTORY;
  UPDATE_GLOBALS:    
-inventory_weight += inventory_p->number * inventory_p->weight;
+    inventory_weight += (added || slot < MAX_INVEN_BAG) * (inventory_p->number * inventory_p->weight);
 py.flags.status |= PY_STR_WGT;
  return slot;
 }
