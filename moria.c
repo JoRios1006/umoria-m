@@ -46,8 +46,9 @@
 #define LOCAL_PATHS_H
 
 #ifndef LIBDIR
-#define LIBDIR "/dev/null" /* will be replaced via -DLIBDIR="..." in CPPFLAGS  \
-                            */
+#define LIBDIR                                                                 \
+    "/dev/null" /* will be replaced via -DLIBDIR="..." in CPPFLAGS             \
+                 */
 #endif
 
 /* Nuke legacy/conflicting defines and force our LIBDIR-based paths */
@@ -1172,8 +1173,8 @@ typedef char stat_type[7];
 
 typedef struct creature_type {
     char *name;      /* Descrip of creature	*/
-    u32i cmove;    /* Bit field		*/
-    u32i spells;   /* Creature spells	*/
+    u32i cmove;      /* Bit field		*/
+    u32i spells;     /* Creature spells	*/
     int16u cdefense; /* Bit field		*/
     int16u mexp;     /* Exp value for kill	*/
     int8u sleep;     /* Inactive counter/10	*/
@@ -1220,7 +1221,7 @@ typedef struct monster_type {
 
 typedef struct treasure_type {
     char *name;      /* Object name		*/
-    u32i flags;    /* Special flags	*/
+    u32i flags;      /* Special flags	*/
     int8u tval;      /* Category number	*/
     int8u tchar;     /* Character representation*/
     int16 p1;        /* Misc. use variable	*/
@@ -1247,12 +1248,12 @@ typedef struct inven_type {
     int16u index;               /* Index to object_list */
     int8u name2;                /* Object special name  */
     char inscrip[INSCRIP_SIZE]; /* Object inscription   */
-    u32i flags;               /* Special flags	*/
-    int8u item_category;                 /* Category number	*/
+    u32i flags;                 /* Special flags	*/
+    int8u item_category;        /* Category number	*/
     int8u tchar;                /* Character representation*/
     int16 p1;                   /* Misc. use variable	*/
     int32 cost;                 /* Cost of item		*/
-    int8u item_subcategory;               /* Sub-category number	*/
+    int8u item_subcategory;     /* Sub-category number	*/
     int8u number;               /* Number of items	*/
     int16u weight;              /* Weight		*/
     int16 tohit;                /* Plusses to hit	*/
@@ -1277,13 +1278,13 @@ typedef struct player_type {
         int16u age;                  /* Characters age	*/
         int16u ht;                   /* Height		*/
         int16u wt;                   /* Weight		*/
-        int16u level;                  /* Level		*/
+        int16u level;                /* Level		*/
         int16u max_dlv;              /* Max level explored	*/
         int16 srh;                   /* Chance in search	*/
         int16 fos;                   /* Frenq of search	*/
         int16 bth;                   /* Base to hit		*/
         int16 bthb;                  /* BTH with bows	*/
-        int16 max_mana;                  /* Mana points		*/
+        int16 max_mana;              /* Mana points		*/
         int16 mhp;                   /* Max hit pts		*/
         int16 ptohit;                /* Plusses to hit	*/
         int16 ptodam;                /* Plusses to dam	*/
@@ -1301,8 +1302,8 @@ typedef struct player_type {
         int8u prace;                 /* # of race		*/
         int8u hitdie;                /* Char hit die		*/
         int8u expfact;               /* Experience factor	*/
-        int16 int_mana;                 /* Cur mana pts		*/
-        int16u frac_mana;           /* Cur mana fraction * 2^16 */
+        int16 int_mana;              /* Cur mana pts		*/
+        int16u frac_mana;            /* Cur mana fraction * 2^16 */
         int16 chp;                   /* Cur hit pts		*/
         int16u chp_frac;             /* Cur hit fraction * 2^16 */
         char history[4][60];         /* History record	*/
@@ -1315,7 +1316,7 @@ typedef struct player_type {
         int8u use_stat[6]; /* What is used */
     } stats;
     struct flags {
-        u32i status;         /* Status of player    */
+        u32i status;           /* Status of player    */
         int16 rest;            /* Rest counter	       */
         int16 blind;           /* Blindness counter   */
         int16 paralysis;       /* Paralysis counter   */
@@ -1608,8 +1609,8 @@ extern FILE *highscore_fp;      /* High score file pointer */
 extern int command_count;       /* Repetition of commands. -CJS- */
 extern int default_dir;         /* Use last direction in repeated commands */
 extern int16 noscore;           /* Don't score this game. -CJS- */
-extern u32i randes_seed;      /* For encoding colors */
-extern u32i town_seed;        /* Seed for town genera*/
+extern u32i randes_seed;        /* For encoding colors */
+extern u32i town_seed;          /* Seed for town genera*/
 extern int16 dun_level;         /* Cur dungeon level   */
 extern int16 missile_ctr;       /* Counter for missiles */
 extern int msg_flag;            /* Set with first msg  */
@@ -1669,10 +1670,10 @@ extern spell_type (*magic_spell)[31];
 extern spell_type magic_spell[MAX_CLASS - 1][31];
 #endif
 extern char *spell_names[62];
-extern u32i can_cast_spells;   /* Bit field for spells learnt -CJS- */
-extern u32i spell_worked;    /* Bit field for spells tried -CJS- */
-extern u32i spell_forgotten; /* Bit field for spells forgotten -JEW- */
-extern int8u spell_order[32];  /* remember order that spells are learned in */
+extern u32i can_cast_spells;  /* Bit field for spells learnt -CJS- */
+extern u32i spell_worked;     /* Bit field for spells tried -CJS- */
+extern u32i spell_forgotten;  /* Bit field for spells forgotten -JEW- */
+extern int8u spell_order[32]; /* remember order that spells are learned in */
 extern int16u player_init[MAX_CLASS][5];
 extern int16 total_winner;
 extern int32 max_score;
@@ -1705,10 +1706,10 @@ extern inven_type t_list[MAX_TALLOC];
 extern inven_type inventory[INVEN_ARRAY_SIZE];
 extern char *special_names[SN_ARRAY_SIZE];
 extern int16 sorted_objects[MAX_DUNGEON_OBJ];
-extern int16 inventory_counter;    /* Total different obj's        */
-extern int16 inventory_weight; /* Cur carried weight   */
-extern int16 equip_ctr;    /* Cur equipment ctr    */
-extern int16 tcptr;        /* Cur treasure heap ptr        */
+extern int16 inventory_counter; /* Total different obj's        */
+extern int16 inventory_weight;  /* Cur carried weight   */
+extern int16 equip_ctr;         /* Cur equipment ctr    */
+extern int16 tcptr;             /* Cur treasure heap ptr        */
 
 /* Following are creature arrays and variables                  */
 #ifdef MACGAME
@@ -2849,8 +2850,8 @@ int32 max_score = 0;
 int character_generated = 0; /* don't save score until char gen finished */
 int character_saved = 0;     /* prevents save on kill after save_char() */
 FILE *highscore_fp;          /* File pointer to high score file */
-u32i randes_seed;          /* for restarting randes_state */
-u32i town_seed;            /* for restarting town_seed */
+u32i randes_seed;            /* for restarting randes_state */
+u32i town_seed;              /* for restarting town_seed */
 int16 cur_height, cur_width; /* Cur dungeon size    */
 int16 dun_level = 0;         /* Cur dungeon level   */
 int16 missile_ctr = 0;       /* Counter for missiles */
@@ -3418,7 +3419,8 @@ inven_type *item;
 int set_frost_destroy(item)
 inven_type *item;
 {
-    if ((item->item_category == TV_POTION1) || (item->item_category == TV_POTION2) ||
+    if ((item->item_category == TV_POTION1) ||
+        (item->item_category == TV_POTION2) ||
         (item->item_category == TV_FLASK))
         return (TRUE);
     return (FALSE);
@@ -6309,7 +6311,8 @@ void print_objects() {
 #endif
                         add_inscribe(inventory_p, ID_DAMD);
                     objdes(tmp_str, inventory_p, TRUE);
-                    (void)fprintf(file1, "%d %s\n", inventory_p->level, tmp_str);
+                    (void)fprintf(file1, "%d %s\n", inventory_p->level,
+                                  tmp_str);
                 }
                 pusht((int8u)j);
                 (void)fclose(file1);
@@ -6899,7 +6902,8 @@ int y, x;
             c_ptr = &cave[j][k];
             /* should fail if there is already a door present */
             if (c_ptr->fval == CORR_FLOOR &&
-                (c_ptr->tptr == 0 || t_list[c_ptr->tptr].item_category < TV_MIN_DOORS))
+                (c_ptr->tptr == 0 ||
+                 t_list[c_ptr->tptr].item_category < TV_MIN_DOORS))
                 i++;
         }
     return (i);
@@ -6983,13 +6987,13 @@ int fromY, fromX, toY, toX;
        integer arithmetic. */
 
     {
-        int px, /* x position				*/
-            p_y,         /* y position				*/
-            scale2;      /* above scale factor / 2		*/
-        int scale,       /* above scale factor			*/
-            xSign,       /* sign of deltaX			*/
-            ySign,       /* sign of deltaY			*/
-            m;           /* slope or 1/slope of LOS		*/
+        int px,     /* x position				*/
+            p_y,    /* y position				*/
+            scale2; /* above scale factor / 2		*/
+        int scale,  /* above scale factor			*/
+            xSign,  /* sign of deltaX			*/
+            ySign,  /* sign of deltaY			*/
+            m;      /* slope or 1/slope of LOS		*/
 
         scale2 = abs(deltaX * deltaY);
         scale = scale2 << 1;
@@ -8521,7 +8525,8 @@ void magic_treasure(x, level) int x, level;
     case TV_SPIKE:
     case TV_BOLT:
     case TV_ARROW:
-        if (t_ptr->item_category == TV_SLING_AMMO || t_ptr->item_category == TV_BOLT ||
+        if (t_ptr->item_category == TV_SLING_AMMO ||
+            t_ptr->item_category == TV_BOLT ||
             t_ptr->item_category == TV_ARROW) {
             /* always show tohit/todam values if identified */
             t_ptr->ident |= ID_SHOW_HITDAM;
@@ -9851,7 +9856,8 @@ void inven_destroy(item_val) int item_val;
 #endif
 
     inventory_p = &inventory[item_val];
-    if ((inventory_p->number > 1) && (inventory_p->item_subcategory <= ITEM_SINGLE_STACK_MAX)) {
+    if ((inventory_p->number > 1) &&
+        (inventory_p->item_subcategory <= ITEM_SINGLE_STACK_MAX)) {
         inventory_p->number--;
         inventory_weight -= inventory_p->weight;
     } else {
@@ -9873,7 +9879,8 @@ void inven_destroy(item_val) int item_val;
 void take_one_item(s_ptr, inventory_p) inven_type *s_ptr, *inventory_p;
 {
     *s_ptr = *inventory_p;
-    if ((s_ptr->number > 1) && (s_ptr->item_subcategory >= ITEM_SINGLE_STACK_MIN) &&
+    if ((s_ptr->number > 1) &&
+        (s_ptr->item_subcategory >= ITEM_SINGLE_STACK_MIN) &&
         (s_ptr->item_subcategory <= ITEM_SINGLE_STACK_MAX))
         s_ptr->number = 1;
 }
@@ -9978,7 +9985,8 @@ inven_type *inventory_p;
     int i, new_inven_weight;
 
     i = weight_limit();
-    new_inven_weight = inventory_p->number * inventory_p->weight + inventory_weight;
+    new_inven_weight =
+        inventory_p->number * inventory_p->weight + inventory_weight;
     if (i < new_inven_weight)
         i = new_inven_weight / (i + 1);
     else
@@ -10039,48 +10047,51 @@ static inline bool can_items_stack(inven_type *item, inven_type *bag_slot) {
            (item->item_subcategory == bag_slot->item_subcategory) &&
            (item->item_subcategory >= ITEM_SINGLE_STACK_MIN) &&
            ((int)bag_slot->number + (int)item->number < 256) &&
-           (!(item->item_subcategory >= ITEM_GROUP_MIN) || (bag_slot->p1 == item->p1)) &&
+           (!(item->item_subcategory >= ITEM_GROUP_MIN) ||
+            (bag_slot->p1 == item->p1)) &&
            (known1_p(item) == known1_p(bag_slot));
 };
 
-int inven_carry(inven_type *inventory_p){
-  bool added = 0;
-  int slot = 0;
-  int idx;
-  inven_type *current_item_p;
-  bool should_insert;
+int inven_carry(inven_type *inventory_p) {
+    bool added = 0;
+    int slot = 0;
+    int idx;
+    inven_type *current_item_p;
+    bool should_insert;
 TRAVERSE_INVENTORY:
- if(MAX_INVEN_BAG == slot) goto UPDATE_GLOBALS;
+    if (MAX_INVEN_BAG == slot)
+        goto UPDATE_GLOBALS;
     current_item_p = &inventory[slot];
     if (can_items_stack(inventory_p, current_item_p)) {
         current_item_p->number += inventory_p->number;
-        goto UPDATE_GLOBALS; 
+        goto UPDATE_GLOBALS;
     }
-  should_insert =
-    (inventory_p->item_category > current_item_p->item_category) ||
-    (inventory_p->item_category == current_item_p->item_category &&
-     inventory_p->item_subcategory < current_item_p->item_subcategory &&
-     (object_offset(inventory_p) == -1));
+    should_insert =
+        (inventory_p->item_category > current_item_p->item_category) ||
+        (inventory_p->item_category == current_item_p->item_category &&
+         inventory_p->item_subcategory < current_item_p->item_subcategory &&
+         (object_offset(inventory_p) == -1));
     if (should_insert) {
-      idx = inventory_counter;
-SHIFT_ITEMS_DOWN:
+        idx = inventory_counter;
+    SHIFT_ITEMS_DOWN:
         inventory[idx + 1] = inventory[idx];
         if (idx == slot)
-          goto INSERT_NEW_ITEM;
+            goto INSERT_NEW_ITEM;
         idx--;
-	goto SHIFT_ITEMS_DOWN;
-INSERT_NEW_ITEM:
-    inventory[slot] = *inventory_p;
-    inventory_counter++;
-    added = !added;
+        goto SHIFT_ITEMS_DOWN;
+    INSERT_NEW_ITEM:
+        inventory[slot] = *inventory_p;
+        inventory_counter++;
+        added = !added;
         goto UPDATE_GLOBALS;
     }
     slot++;
     goto TRAVERSE_INVENTORY;
- UPDATE_GLOBALS:    
-    inventory_weight += (added || slot < MAX_INVEN_BAG) * (inventory_p->number * inventory_p->weight);
-py.flags.status |= PY_STR_WGT;
- return slot;
+UPDATE_GLOBALS:
+    inventory_weight += (added || slot < MAX_INVEN_BAG) *
+                        (inventory_p->number * inventory_p->weight);
+    py.flags.status |= PY_STR_WGT;
+    return slot;
 }
 
 /* Returns spell chance of failure for spell            -RAK-   */
@@ -10241,14 +10252,14 @@ int first_spell;
 
 /* calculate number of spells player should have, and learn forget spells
    until that number is met -JEW- */
-void calc_spells(int stat){
+void calc_spells(int stat) {
     struct misc *player_p = &py.misc;
     int i, j, new_spells, num_known;
     u32i mask;
     vtype tmp_str;
-    
+
     char *label = (stat == A_INT) ? "spell" : "prayer";
-    int offset  = (stat == A_INT) ? SPELL_OFFSET : PRAYER_OFFSET;
+    int offset = (stat == A_INT) ? SPELL_OFFSET : PRAYER_OFFSET;
     spell_type *spells = &magic_spell[player_p->pclass - 1][0];
 
     for (i = 31; i >= 0; i--) {
@@ -10256,46 +10267,57 @@ void calc_spells(int stat){
         if ((mask & can_cast_spells) && (spells[i].slevel > player_p->level)) {
             can_cast_spells &= ~mask;
             spell_forgotten |= mask;
-            sprintf(tmp_str, "You have forgotten the %s of %s.", label, spell_names[i + offset]);
+            sprintf(tmp_str, "You have forgotten the %s of %s.", label,
+                    spell_names[i + offset]);
             msg_print(tmp_str);
         }
     }
 
-    static const int capacity_mults[] = { 0, 2, 2, 2, 3, 3, 4, 5 };
-    const int levels = player_p->level - class[player_p->pclass].first_spell_lev + 1;
-    const int num_allowed = (capacity_mults[get_mana_multiplier(stat)] * levels) / 2;
+    static const int capacity_mults[] = {0, 2, 2, 2, 3, 3, 4, 5};
+    const int levels =
+        player_p->level - class[player_p->pclass].first_spell_lev + 1;
+    const int num_allowed =
+        (capacity_mults[get_mana_multiplier(stat)] * levels) / 2;
 
     num_known = 0;
     for (mask = 0x1; mask; mask <<= 1) {
-        if (mask & can_cast_spells) num_known++;
+        if (mask & can_cast_spells)
+            num_known++;
     }
     new_spells = num_allowed - num_known;
 
     if (new_spells > 0) {
-        for (i = 0; (spell_forgotten && new_spells && i < num_allowed && i < 32); i++) {
+        for (i = 0;
+             (spell_forgotten && new_spells && i < num_allowed && i < 32);
+             i++) {
             j = spell_order[i];
-            if (j == 99) continue;
+            if (j == 99)
+                continue;
             mask = 1L << j;
 
-            if ((mask & spell_forgotten) && (spells[j].slevel <= player_p->level)) {
+            if ((mask & spell_forgotten) &&
+                (spells[j].slevel <= player_p->level)) {
                 new_spells--;
                 spell_forgotten &= ~mask;
-                can_cast_spells  |= mask;
-                sprintf(tmp_str, "You have remembered the %s of %s.", label, spell_names[j + offset]);
+                can_cast_spells |= mask;
+                sprintf(tmp_str, "You have remembered the %s of %s.", label,
+                        spell_names[j + offset]);
                 msg_print(tmp_str);
             }
         }
     } else if (new_spells < 0) {
         for (i = 31; new_spells && can_cast_spells && i >= 0; i--) {
             j = spell_order[i];
-            if (j == 99) continue;
+            if (j == 99)
+                continue;
             mask = 1L << j;
 
             if (mask & can_cast_spells) {
                 can_cast_spells &= ~mask;
                 spell_forgotten |= mask;
                 new_spells++;
-                sprintf(tmp_str, "You have forgotten the %s of %s.", label, spell_names[j + offset]);
+                sprintf(tmp_str, "You have forgotten the %s of %s.", label,
+                        spell_names[j + offset]);
                 msg_print(tmp_str);
             }
         }
@@ -10443,7 +10465,7 @@ void gain_spells() {
 /* Gain some mana if you know at least one spell        -RAK-   */
 void calc_mana(int stat) {
     struct misc *player_p = &py.misc;
-    
+
     if (!can_cast_spells) {
         if (player_p->max_mana != 0) {
             player_p->max_mana = 0;
@@ -10453,15 +10475,18 @@ void calc_mana(int stat) {
         return;
     }
 
-    const int LEVELS = player_p->level - class[player_p->pclass].first_spell_lev + 1;
+    const int LEVELS =
+        player_p->level - class[player_p->pclass].first_spell_lev + 1;
     const int MULTIPLIER = get_mana_multiplier(stat);
     const int new_mana = (MULTIPLIER > 0) * ((MULTIPLIER + 1) * LEVELS / 2 + 1);
 
-    if (player_p->max_mana == new_mana) return;
+    if (player_p->max_mana == new_mana)
+        return;
 
     if (player_p->max_mana) {
-        int32 scaled_fixed_mana = (((long)player_p->int_mana << 16) + player_p->frac_mana) 
-                                  * new_mana / player_p->max_mana;
+        int32 scaled_fixed_mana =
+            (((long)player_p->int_mana << 16) + player_p->frac_mana) *
+            new_mana / player_p->max_mana;
         player_p->int_mana = scaled_fixed_mana >> 16;
         player_p->frac_mana = scaled_fixed_mana & 0xFFFF;
     } else {
@@ -10763,13 +10788,16 @@ int monster;
 #else
     if ((inventory_p->flags & TR_EGO_WEAPON) &&
 #endif
-        (((inventory_p->item_category >= TV_SLING_AMMO) && (inventory_p->item_category <= TV_ARROW)) ||
-         ((inventory_p->item_category >= TV_HAFTED) && (inventory_p->item_category <= TV_SWORD)) ||
+        (((inventory_p->item_category >= TV_SLING_AMMO) &&
+          (inventory_p->item_category <= TV_ARROW)) ||
+         ((inventory_p->item_category >= TV_HAFTED) &&
+          (inventory_p->item_category <= TV_SWORD)) ||
          (inventory_p->item_category == TV_FLASK))) {
         m_ptr = &c_list[monster];
         r_ptr = &c_recall[monster];
         /* Slay Dragon  */
-        if ((m_ptr->cdefense & CD_DRAGON) && (inventory_p->flags & TR_SLAY_DRAGON)) {
+        if ((m_ptr->cdefense & CD_DRAGON) &&
+            (inventory_p->flags & TR_SLAY_DRAGON)) {
             tdam = tdam * 4;
             r_ptr->r_cdefense |= CD_DRAGON;
         }
@@ -10792,7 +10820,8 @@ int monster;
             r_ptr->r_cdefense |= CD_ANIMAL;
         }
         /* Slay Evil     */
-        else if ((m_ptr->cdefense & CD_EVIL) && (inventory_p->flags & TR_SLAY_EVIL)) {
+        else if ((m_ptr->cdefense & CD_EVIL) &&
+                 (inventory_p->flags & TR_SLAY_EVIL)) {
             tdam = tdam * 2;
             r_ptr->r_cdefense |= CD_EVIL;
         }
@@ -10916,8 +10945,8 @@ int player_saves() {
     /* MPW C couldn't handle the expression, so split it into two parts */
     int16 temp = class_level_adj[py.misc.pclass][CLA_SAVE];
 
-    if (randint(100) <=
-        (py.misc.save + get_mana_multiplier(A_WIS) + (temp * py.misc.level / 3)))
+    if (randint(100) <= (py.misc.save + get_mana_multiplier(A_WIS) +
+                         (temp * py.misc.level / 3)))
         return (TRUE);
     else
         return (FALSE);
@@ -10939,12 +10968,14 @@ int *j, *k;
     inventory_p = &inventory[0];
     while (i < inventory_counter) {
         if (!flag) {
-            if ((inventory_p->item_category == item1) || (inventory_p->item_category == item2)) {
+            if ((inventory_p->item_category == item1) ||
+                (inventory_p->item_category == item2)) {
                 flag = TRUE;
                 *j = i;
             }
         } else {
-            if ((inventory_p->item_category != item1) && (inventory_p->item_category != item2)) {
+            if ((inventory_p->item_category != item1) &&
+                (inventory_p->item_category != item2)) {
                 *k = i - 1;
                 break;
             }
@@ -11270,29 +11301,25 @@ inven_type *inventory_p;
 }
 
 /* Remove "Secret" symbol for identity of plusses			*/
-void known2(inven_type *inventory_p){
+void known2(inven_type *inventory_p) {
     unsample(inventory_p);
     inventory_p->ident |= ID_KNOWN2;
 }
 
-int known2_p(inven_type *inventory_p){
+int known2_p(inven_type *inventory_p) {
     return (inventory_p->ident & ID_KNOWN2);
 }
 
-void clear_known2(inven_type *inventory_p){
-    inventory_p->ident &= ~ID_KNOWN2;
-}
+void clear_known2(inven_type *inventory_p) { inventory_p->ident &= ~ID_KNOWN2; }
 
-void clear_empty(inven_type *inventory_p){
-    inventory_p->ident &= ~ID_EMPTY;
-}
+void clear_empty(inven_type *inventory_p) { inventory_p->ident &= ~ID_EMPTY; }
 
-void store_bought(inven_type *inventory_p){
+void store_bought(inven_type *inventory_p) {
     inventory_p->ident |= ID_STOREBOUGHT;
     known2(inventory_p);
 }
 
-int store_bought_p(inven_type *inventory_p){
+int store_bought_p(inven_type *inventory_p) {
     return (inventory_p->ident & ID_STOREBOUGHT);
 }
 
@@ -11357,7 +11384,8 @@ void identify(item) int *item;
         else
             for (i = 0; i < inventory_counter; i++) {
                 t_ptr = &inventory[i];
-                if (t_ptr->item_category == x1 && t_ptr->item_subcategory == x2 && i != *item &&
+                if (t_ptr->item_category == x1 &&
+                    t_ptr->item_subcategory == x2 && i != *item &&
                     ((int)t_ptr->number + (int)inventory_p->number < 256)) {
                     /* make *item the smaller number */
                     if (*item > i) {
@@ -11422,7 +11450,8 @@ int pref;
     case TV_SLING_AMMO:
     case TV_BOLT:
     case TV_ARROW:
-        (void)sprintf(damstr, " (%dd%d)", inventory_p->damage[0], inventory_p->damage[1]);
+        (void)sprintf(damstr, " (%dd%d)", inventory_p->damage[0],
+                      inventory_p->damage[1]);
         break;
     case TV_LIGHT:
         p1_use = LIGHT;
@@ -11443,12 +11472,14 @@ int pref;
     case TV_HAFTED:
     case TV_POLEARM:
     case TV_SWORD:
-        (void)sprintf(damstr, " (%dd%d)", inventory_p->damage[0], inventory_p->damage[1]);
+        (void)sprintf(damstr, " (%dd%d)", inventory_p->damage[0],
+                      inventory_p->damage[1]);
         p1_use = FLAGS;
         break;
     case TV_DIGGING:
         p1_use = Z_PLUSSES;
-        (void)sprintf(damstr, " (%dd%d)", inventory_p->damage[0], inventory_p->damage[1]);
+        (void)sprintf(damstr, " (%dd%d)", inventory_p->damage[0],
+                      inventory_p->damage[1]);
         break;
     case TV_BOOTS:
     case TV_GLOVES:
@@ -11600,7 +11631,8 @@ int pref;
             /* originally used %+d, but several machines don't support it */
             if (inventory_p->ident & ID_SHOW_HITDAM)
                 (void)sprintf(tmp_str, " (%c%d,%c%d)",
-                              (inventory_p->tohit < 0) ? '-' : '+', abs(inventory_p->tohit),
+                              (inventory_p->tohit < 0) ? '-' : '+',
+                              abs(inventory_p->tohit),
                               (inventory_p->todam < 0) ? '-' : '+',
                               abs(inventory_p->todam));
             else if (inventory_p->tohit != 0)
@@ -11621,14 +11653,16 @@ int pref;
             (void)strcat(tmp_val, tmp_str);
             if (known2_p(inventory_p)) {
                 /* originally used %+d, but several machines don't support it */
-                (void)sprintf(tmp_str, ",%c%d", (inventory_p->toac < 0) ? '-' : '+',
+                (void)sprintf(tmp_str, ",%c%d",
+                              (inventory_p->toac < 0) ? '-' : '+',
                               abs(inventory_p->toac));
                 (void)strcat(tmp_val, tmp_str);
             }
             (void)strcat(tmp_val, "]");
         } else if ((inventory_p->toac != 0) && known2_p(inventory_p)) {
             /* originally used %+d, but several machines don't support it */
-            (void)sprintf(tmp_str, " [%c%d]", (inventory_p->toac < 0) ? '-' : '+',
+            (void)sprintf(tmp_str, " [%c%d]",
+                          (inventory_p->toac < 0) ? '-' : '+',
                           abs(inventory_p->toac));
             (void)strcat(tmp_val, tmp_str);
         }
@@ -11646,14 +11680,16 @@ int pref;
         else if (known2_p(inventory_p)) {
             if (p1_use == Z_PLUSSES)
                 /* originally used %+d, but several machines don't support it */
-                (void)sprintf(tmp_str, " (%c%d)", (inventory_p->p1 < 0) ? '-' : '+',
+                (void)sprintf(tmp_str, " (%c%d)",
+                              (inventory_p->p1 < 0) ? '-' : '+',
                               abs(inventory_p->p1));
             else if (p1_use == CHARGES)
                 (void)sprintf(tmp_str, " (%d charges)", inventory_p->p1);
             else if (inventory_p->p1 != 0) {
                 if (p1_use == PLUSSES)
                     (void)sprintf(tmp_str, " (%c%d)",
-                                  (inventory_p->p1 < 0) ? '-' : '+', abs(inventory_p->p1));
+                                  (inventory_p->p1 < 0) ? '-' : '+',
+                                  abs(inventory_p->p1));
                 else if (p1_use == FLAGS) {
                     if (inventory_p->flags & TR_STR)
                         (void)sprintf(tmp_str, " (%c%d to STR)",
@@ -11672,7 +11708,8 @@ int pref;
         if (tmp_val[0] == '&') {
             /* use &tmp_val[1], so that & does not appear in output */
             if (inventory_p->number > 1)
-                (void)sprintf(out_val, "%d%s", (int)inventory_p->number, &tmp_val[1]);
+                (void)sprintf(out_val, "%d%s", (int)inventory_p->number,
+                              &tmp_val[1]);
             else if (inventory_p->number < 1)
                 (void)sprintf(out_val, "%s%s", "no more", &tmp_val[1]);
             else if (is_a_vowel(tmp_val[2]))
@@ -11693,10 +11730,11 @@ int pref;
 
         tmp_str[0] = '\0';
         if ((indexx = object_offset(inventory_p)) >= 0) {
-            indexx =
-                (indexx <<= 6) + (inventory_p->item_subcategory & (ITEM_SINGLE_STACK_MIN - 1));
+            indexx = (indexx <<= 6) + (inventory_p->item_subcategory &
+                                       (ITEM_SINGLE_STACK_MIN - 1));
             /* don't print tried string for store bought items */
-            if ((object_ident[indexx] & OD_TRIED) && !store_bought_p(inventory_p))
+            if ((object_ident[indexx] & OD_TRIED) &&
+                !store_bought_p(inventory_p))
                 (void)strcat(tmp_str, "tried ");
         }
         if (inventory_p->ident & (ID_MAGIK | ID_EMPTY | ID_DAMD)) {
@@ -11720,28 +11758,26 @@ int pref;
     }
 }
 
-void invcopy(inven_type *to, int from_index){
+void invcopy(inven_type *to, int from_index) {
     treasure_type *from = &object_list[from_index];
-    *to = (inven_type){
-        .index            = from_index,
-        .name2            = SN_NULL,
-        .inscrip          = { '\0' },
-        .flags            = from->flags,
-        .item_category    = from->tval,
-        .tchar            = from->tchar,
-        .p1               = from->p1,
-        .cost             = from->cost,
-        .item_subcategory = from->subval,
-        .number           = from->number,
-        .weight           = from->weight,
-        .tohit            = from->tohit,
-        .todam            = from->todam,
-        .ac               = from->ac,
-        .toac             = from->toac,
-        .damage           = { from->damage[0], from->damage[1] },
-        .level            = from->level,
-        .ident            = 0
-    };
+    *to = (inven_type){.index = from_index,
+                       .name2 = SN_NULL,
+                       .inscrip = {'\0'},
+                       .flags = from->flags,
+                       .item_category = from->tval,
+                       .tchar = from->tchar,
+                       .p1 = from->p1,
+                       .cost = from->cost,
+                       .item_subcategory = from->subval,
+                       .number = from->number,
+                       .weight = from->weight,
+                       .tohit = from->tohit,
+                       .todam = from->todam,
+                       .ac = from->ac,
+                       .toac = from->toac,
+                       .damage = {from->damage[0], from->damage[1]},
+                       .level = from->level,
+                       .ident = 0};
 }
 
 /* Describe number of remaining charges.		-RAK-	*/
@@ -12820,10 +12856,10 @@ int16 class_level_adj[MAX_CLASS][MAX_LEV_ADJ] = {
     /* Ranger  */ {3, 4, 3, 3, 3},
     /* Paladin */ {3, 3, 3, 2, 3}};
 
-u32i can_cast_spells = 0;   /* bit mask of spells learned */
+u32i can_cast_spells = 0; /* bit mask of spells learned */
 u32i spell_worked = 0;    /* bit mask of spells tried and worked */
 u32i spell_forgotten = 0; /* bit mask of spells learned but forgotten */
-int8u spell_order[32];      /* order spells learned/remembered/forgotten */
+int8u spell_order[32];    /* order spells learned/remembered/forgotten */
 
 /* Warriors don't have spells, so there is no entry for them.  Note that
    this means you must always subtract one from the py.misc.pclass before
@@ -15254,7 +15290,8 @@ void dungeon() {
         } else if (f_ptr->rest < 0) {
             /* Rest until reach max mana and max hit points.  */
             f_ptr->rest++;
-            if ((p_ptr->chp == p_ptr->mhp && p_ptr->int_mana == p_ptr->max_mana) ||
+            if ((p_ptr->chp == p_ptr->mhp &&
+                 p_ptr->int_mana == p_ptr->max_mana) ||
                 f_ptr->rest == 0)
                 rest_off();
         }
@@ -15568,7 +15605,8 @@ void dungeon() {
                 inventory_p = &inventory[i];
                 /* if in inventory, succeed 1 out of 50 times,
                    if in equipment list, success 1 out of 10 times */
-                if ((inventory_p->item_category != TV_NOTHING) && enchanted(inventory_p) &&
+                if ((inventory_p->item_category != TV_NOTHING) &&
+                    enchanted(inventory_p) &&
                     (randint(i < 22 ? 50 : 10) == 1)) {
                     extern char *describe_use();
 
@@ -16650,7 +16688,8 @@ inven_type *t_ptr;
     int32u holder;
 #endif
 
-    if (t_ptr->item_category < TV_MIN_ENCHANT || t_ptr->item_category > TV_MAX_ENCHANT
+    if (t_ptr->item_category < TV_MIN_ENCHANT ||
+        t_ptr->item_category > TV_MAX_ENCHANT
 #ifdef ATARIST_MWC
         || t_ptr->flags & (holder = TR_CURSED))
 #else
@@ -17317,7 +17356,8 @@ static void make_attack(monptr) int monptr;
         case 24: /*Eat charges	  */
             if ((test_hit(15, (int)r_ptr->level, 0, p_ptr->pac + p_ptr->ptoac,
                           CLA_MISC_HIT)) &&
-                (inventory_counter > 0)) /* check to make sure an object exists */
+                (inventory_counter >
+                 0)) /* check to make sure an object exists */
                 flag = TRUE;
             break;
         case 99:
@@ -17685,7 +17725,8 @@ static void make_attack(monptr) int monptr;
                 i = randint(inventory_counter) - 1;
                 j = r_ptr->level;
                 inventory_p = &inventory[i];
-                if (((inventory_p->item_category == TV_STAFF) || (inventory_p->item_category == TV_WAND)) &&
+                if (((inventory_p->item_category == TV_STAFF) ||
+                     (inventory_p->item_category == TV_WAND)) &&
                     (inventory_p->p1 > 0)) {
                     m_ptr->hp += j * inventory_p->p1;
                     inventory_p->p1 = 0;
@@ -19718,7 +19759,8 @@ void eat() {
                 /* use identified it, gain experience */
                 m_ptr = &py.misc;
                 /* round half-way case up */
-                m_ptr->exp += (inventory_p->level + (m_ptr->level >> 1)) / m_ptr->level;
+                m_ptr->exp +=
+                    (inventory_p->level + (m_ptr->level >> 1)) / m_ptr->level;
                 prt_experience();
 
                 identify(&item_val);
@@ -19849,7 +19891,8 @@ void cast() {
                     for (i = 22; i < INVEN_ARRAY_SIZE; i++) {
                         inventory_p = &inventory[i];
 #ifdef ATARIST_MWC
-                        inventory_p->flags = (inventory_p->flags & ~(holder = TR_CURSED));
+                        inventory_p->flags =
+                            (inventory_p->flags & ~(holder = TR_CURSED));
 #else
                         inventory_p->flags = (inventory_p->flags & ~TR_CURSED);
 #endif
@@ -20117,7 +20160,8 @@ void calc_bonuses() {
         inventory_p = &inventory[i];
         if (inventory_p->item_category != TV_NOTHING) {
             m_ptr->ptohit += inventory_p->tohit;
-            if (inventory_p->item_category != TV_BOW) /* Bows can't damage. -CJS- */
+            if (inventory_p->item_category !=
+                TV_BOW) /* Bows can't damage. -CJS- */
                 m_ptr->ptodam += inventory_p->todam;
             m_ptr->ptoac += inventory_p->toac;
             m_ptr->pac += inventory_p->ac;
@@ -20597,8 +20641,8 @@ static void inven_screen(new_scr) int new_scr;
             line = 7;
             break;
         case INVEN_SCR:
-            scr_left =
-                show_inven(0, inventory_counter - 1, show_weight_flag, scr_left, CNIL);
+            scr_left = show_inven(0, inventory_counter - 1, show_weight_flag,
+                                  scr_left, CNIL);
             line = inventory_counter;
             break;
         case WEAR_SCR:
@@ -20709,12 +20753,13 @@ void inven_command(command) char command;
             }
             break;
         case 'w': /* Wear/wield	   */
-            for (wear_low = 0;
-                 wear_low < inventory_counter && inventory[wear_low].item_category > TV_MAX_WEAR;
+            for (wear_low = 0; wear_low < inventory_counter &&
+                               inventory[wear_low].item_category > TV_MAX_WEAR;
                  wear_low++)
                 ;
-            for (wear_high = wear_low; wear_high < inventory_counter &&
-                                       inventory[wear_high].item_category >= TV_MIN_WEAR;
+            for (wear_high = wear_low;
+                 wear_high < inventory_counter &&
+                 inventory[wear_high].item_category >= TV_MIN_WEAR;
                  wear_high++)
                 ;
             wear_high--;
@@ -20901,7 +20946,8 @@ void inven_command(command) char command;
                                     /* As a safety measure, set the player's
                                        inven weight to 0,
                                        when the last object is dropped*/
-                                    if (inventory_counter == 0 && equip_ctr == 0)
+                                    if (inventory_counter == 0 &&
+                                        equip_ctr == 0)
                                         inventory_weight = 0;
                                 } else {
                                     slot = inven_carry(&inventory[item]);
@@ -20920,7 +20966,8 @@ void inven_command(command) char command;
                             else
                                 switch (
                                     inventory[item]
-                                        .item_category) { /* Slot for equipment	   */
+                                        .item_category) { /* Slot for equipment
+                                                           */
                                 case TV_SLING_AMMO:
                                 case TV_BOLT:
                                 case TV_ARROW:
@@ -20961,8 +21008,8 @@ void inven_command(command) char command;
                                     if (inventory[INVEN_RIGHT].item_category ==
                                         TV_NOTHING)
                                         slot = INVEN_RIGHT;
-                                    else if (inventory[INVEN_LEFT].item_category ==
-                                             TV_NOTHING)
+                                    else if (inventory[INVEN_LEFT]
+                                                 .item_category == TV_NOTHING)
                                         slot = INVEN_LEFT;
                                     else {
                                         slot = 0;
@@ -21039,11 +21086,13 @@ void inven_command(command) char command;
                                 wear_high--;
                                 /* Fix for torches	   */
                                 if (inventory_p->number > 1 &&
-                                    inventory_p->item_subcategory <= ITEM_SINGLE_STACK_MAX) {
+                                    inventory_p->item_subcategory <=
+                                        ITEM_SINGLE_STACK_MAX) {
                                     inventory_p->number = 1;
                                     wear_high++;
                                 }
-                                inventory_weight += inventory_p->weight * inventory_p->number;
+                                inventory_weight +=
+                                    inventory_p->weight * inventory_p->number;
                                 inven_destroy(item); /* Subtracts weight */
 
                                 /* second, add old item to inv and remove from
@@ -21075,7 +21124,8 @@ void inven_command(command) char command;
                                 tmp = INVEN_WIELD;
                                 item = 0;
                                 while (tmp != slot)
-                                    if (inventory[tmp++].item_category != TV_NOTHING)
+                                    if (inventory[tmp++].item_category !=
+                                        TV_NOTHING)
                                         item++;
 
                                 (void)sprintf(prt1, "%s %s (%c)", string, prt2,
@@ -21314,7 +21364,8 @@ char *message;
                             i = 21;
                             j = *com_val;
                             do {
-                                while (inventory[++i].item_category == TV_NOTHING)
+                                while (inventory[++i].item_category ==
+                                       TV_NOTHING)
                                     ;
                                 j--;
                             } while (j >= 0);
@@ -22660,7 +22711,7 @@ int pickup;
             msg_print(out_val);
         } else {
             if (inven_check_num(inventory_p)) /* Too many objects?	    */
-            {                           /* Okay,  pick it up      */
+            {                                 /* Okay,  pick it up      */
                 if (pickup && prompt_carry_flag) {
                     objdes(tmp_str, inventory_p, TRUE);
                     /* change the period to a question mark */
@@ -23053,7 +23104,8 @@ void py_attack(y, x) int y, x;
         blows = 2;
         tot_tohit = -3;
     }
-    if ((inventory_p->item_category >= TV_SLING_AMMO) && (inventory_p->item_category <= TV_SPIKE))
+    if ((inventory_p->item_category >= TV_SLING_AMMO) &&
+        (inventory_p->item_category <= TV_SPIKE))
         /* Fix for arrows */
         blows = 1;
     p_ptr = &py.misc;
@@ -23062,8 +23114,9 @@ void py_attack(y, x) int y, x;
     if (m_list[crptr].ml)
         base_tohit = p_ptr->bth;
     else
-        base_tohit = (p_ptr->bth / 2) - (tot_tohit * (BTH_PLUS_ADJ - 1)) -
-                     (p_ptr->level * class_level_adj[p_ptr->pclass][CLA_BTH] / 2);
+        base_tohit =
+            (p_ptr->bth / 2) - (tot_tohit * (BTH_PLUS_ADJ - 1)) -
+            (p_ptr->level * class_level_adj[p_ptr->pclass][CLA_BTH] / 2);
 
     /* Loop for number of blows,	trying to hit the critter.	  */
     do {
@@ -23074,7 +23127,8 @@ void py_attack(y, x) int y, x;
             if (inventory_p->item_category != TV_NOTHING) {
                 k = pdamroll(inventory_p->damage);
                 k = tot_dam(inventory_p, k, monptr);
-                k = critical_blow((int)inventory_p->weight, tot_tohit, k, CLA_BTH);
+                k = critical_blow((int)inventory_p->weight, tot_tohit, k,
+                                  CLA_BTH);
             } else /* Bare hands!?  */
             {
                 k = damroll(1, 1);
@@ -23226,7 +23280,8 @@ void move_char(dir, do_pickup) int dir, do_pickup;
                 if (!find_flag && (c_ptr->tptr != 0)) {
                     if (t_list[c_ptr->tptr].item_category == TV_RUBBLE)
                         msg_print("There is rubble blocking your way.");
-                    else if (t_list[c_ptr->tptr].item_category == TV_CLOSED_DOOR)
+                    else if (t_list[c_ptr->tptr].item_category ==
+                             TV_CLOSED_DOOR)
                         msg_print("There is a closed door blocking your way.");
                 } else
                     end_find();
@@ -23332,7 +23387,8 @@ void openobject() {
                 if (t_ptr->p1 > 0) /* It's locked.	*/
                 {
                     p_ptr = &py.misc;
-                    i = p_ptr->disarm + 2 * todis_adj() + get_mana_multiplier(A_INT) +
+                    i = p_ptr->disarm + 2 * todis_adj() +
+                        get_mana_multiplier(A_INT) +
                         (class_level_adj[p_ptr->pclass][CLA_DISARM] *
                          p_ptr->level / 3);
                     if (py.flags.confused > 0)
@@ -23356,7 +23412,8 @@ void openobject() {
             /* Open a closed chest.		     */
             else if (t_list[c_ptr->tptr].item_category == TV_CHEST) {
                 p_ptr = &py.misc;
-                i = p_ptr->disarm + 2 * todis_adj() + get_mana_multiplier(A_INT) +
+                i = p_ptr->disarm + 2 * todis_adj() +
+                    get_mana_multiplier(A_INT) +
                     (class_level_adj[p_ptr->pclass][CLA_DISARM] * p_ptr->level /
                      3);
                 t_ptr = &t_list[c_ptr->tptr];
@@ -23577,8 +23634,9 @@ void tunnel(dir) int dir;
        prevent the player from getting a free attack by trying to tunnel
        somewhere where it has no effect.  */
     if (c_ptr->fval < MIN_CAVE_WALL &&
-        (c_ptr->tptr == 0 || (t_list[c_ptr->tptr].item_category != TV_RUBBLE &&
-                              t_list[c_ptr->tptr].item_category != TV_SECRET_DOOR))) {
+        (c_ptr->tptr == 0 ||
+         (t_list[c_ptr->tptr].item_category != TV_RUBBLE &&
+          t_list[c_ptr->tptr].item_category != TV_SECRET_DOOR))) {
         if (c_ptr->tptr == 0) {
             msg_print("Tunnel through what?  Empty air?!?");
             free_turn_flag = TRUE;
@@ -23611,8 +23669,8 @@ void tunnel(dir) int dir;
 #endif
             tabil += 25 + inventory_p->p1 * 50;
         else {
-            tabil += (inventory_p->damage[0] * inventory_p->damage[1]) + inventory_p->tohit +
-                     inventory_p->todam;
+            tabil += (inventory_p->damage[0] * inventory_p->damage[1]) +
+                     inventory_p->tohit + inventory_p->todam;
             /* divide by two so that digging without shovel isn't too easy */
             tabil >>= 1;
         }
@@ -23710,9 +23768,10 @@ void disarm_trap() {
             (void)sprintf(out_val, "%s is in your way!", m_name);
             msg_print(out_val);
         } else if (c_ptr->tptr != 0) {
-            tot =
-                py.misc.disarm + 2 * todis_adj() + get_mana_multiplier(A_INT) +
-                (class_level_adj[py.misc.pclass][CLA_DISARM] * py.misc.level / 3);
+            tot = py.misc.disarm + 2 * todis_adj() +
+                  get_mana_multiplier(A_INT) +
+                  (class_level_adj[py.misc.pclass][CLA_DISARM] * py.misc.level /
+                   3);
             if ((py.flags.blind > 0) || (no_light()))
                 tot = tot / 10;
             if (py.flags.confused > 0)
@@ -24079,7 +24138,8 @@ int *transparent;
         if (c_ptr->tptr != 0) {
             if (t_list[c_ptr->tptr].item_category == TV_SECRET_DOOR)
                 goto granite;
-            if (gl_rock == 0 && t_list[c_ptr->tptr].item_category != TV_INVIS_TRAP) {
+            if (gl_rock == 0 &&
+                t_list[c_ptr->tptr].item_category != TV_INVIS_TRAP) {
                 objdes(tmp_str, &t_list[c_ptr->tptr], TRUE);
                 (void)sprintf(out_val, "%s %s ---pause---", dstring, tmp_str);
                 dstring = "It is in";
@@ -24181,7 +24241,8 @@ int *tbth, *tpth, *tdam, *tdis;
     if (inventory[INVEN_WIELD].item_category == TV_BOW)
         switch (inventory[INVEN_WIELD].p1) {
         case 1:
-            if (inventory_p->item_category == TV_SLING_AMMO) /* Sling and ammo */
+            if (inventory_p->item_category ==
+                TV_SLING_AMMO) /* Sling and ammo */
             {
                 *tbth = py.misc.bthb;
                 *tpth += 2 * inventory[INVEN_WIELD].tohit;
@@ -24191,7 +24252,8 @@ int *tbth, *tpth, *tdam, *tdis;
             }
             break;
         case 2:
-            if (inventory_p->item_category == TV_ARROW) /* Short Bow and Arrow	*/
+            if (inventory_p->item_category ==
+                TV_ARROW) /* Short Bow and Arrow	*/
             {
                 *tbth = py.misc.bthb;
                 *tpth += 2 * inventory[INVEN_WIELD].tohit;
@@ -24201,7 +24263,8 @@ int *tbth, *tpth, *tdam, *tdis;
             }
             break;
         case 3:
-            if (inventory_p->item_category == TV_ARROW) /* Long Bow and Arrow	*/
+            if (inventory_p->item_category ==
+                TV_ARROW) /* Long Bow and Arrow	*/
             {
                 *tbth = py.misc.bthb;
                 *tpth += 2 * inventory[INVEN_WIELD].tohit;
@@ -24211,7 +24274,8 @@ int *tbth, *tpth, *tdam, *tdis;
             }
             break;
         case 4:
-            if (inventory_p->item_category == TV_ARROW) /* Composite Bow and Arrow*/
+            if (inventory_p->item_category ==
+                TV_ARROW) /* Composite Bow and Arrow*/
             {
                 *tbth = py.misc.bthb;
                 *tpth += 2 * inventory[INVEN_WIELD].tohit;
@@ -24221,7 +24285,8 @@ int *tbth, *tpth, *tdam, *tdis;
             }
             break;
         case 5:
-            if (inventory_p->item_category == TV_BOLT) /* Light Crossbow and Bolt*/
+            if (inventory_p->item_category ==
+                TV_BOLT) /* Light Crossbow and Bolt*/
             {
                 *tbth = py.misc.bthb;
                 *tpth += 2 * inventory[INVEN_WIELD].tohit;
@@ -24231,7 +24296,8 @@ int *tbth, *tpth, *tdam, *tdis;
             }
             break;
         case 6:
-            if (inventory_p->item_category == TV_BOLT) /* Heavy Crossbow and Bolt*/
+            if (inventory_p->item_category ==
+                TV_BOLT) /* Heavy Crossbow and Bolt*/
             {
                 *tbth = py.misc.bthb;
                 *tpth += 2 * inventory[INVEN_WIELD].tohit;
@@ -24299,8 +24365,8 @@ void throw_object() {
     if (inventory_counter == 0) {
         msg_print("But you are not carrying anything.");
         free_turn_flag = TRUE;
-    } else if (get_item(&item_val, "Fire/Throw which one?", 0, inventory_counter - 1,
-                        CNIL, CNIL)) {
+    } else if (get_item(&item_val, "Fire/Throw which one?", 0,
+                        inventory_counter - 1, CNIL, CNIL)) {
         if (get_dir(CNIL, &dir)) {
             desc_remain(item_val);
             if (py.flags.confused > 0) {
@@ -24914,7 +24980,8 @@ void quaff() {
             if (!known1_p(inventory_p)) {
                 m_ptr = &py.misc;
                 /* round half-way case up */
-                m_ptr->exp += (inventory_p->level + (m_ptr->level >> 1)) / m_ptr->level;
+                m_ptr->exp +=
+                    (inventory_p->level + (m_ptr->level >> 1)) / m_ptr->level;
                 prt_experience();
 
                 identify(&item_val);
@@ -25434,7 +25501,8 @@ void read_scroll() {
             if (!known1_p(inventory_p)) {
                 m_ptr = &py.misc;
                 /* round half-way case up */
-                m_ptr->exp += (inventory_p->level + (m_ptr->level >> 1)) / m_ptr->level;
+                m_ptr->exp +=
+                    (inventory_p->level + (m_ptr->level >> 1)) / m_ptr->level;
                 prt_experience();
 
                 identify(&item_val);
@@ -25560,7 +25628,8 @@ int detect_treasure() {
     for (i = panel_row_min; i <= panel_row_max; i++)
         for (j = panel_col_min; j <= panel_col_max; j++) {
             c_ptr = &cave[i][j];
-            if ((c_ptr->tptr != 0) && (t_list[c_ptr->tptr].item_category == TV_GOLD) &&
+            if ((c_ptr->tptr != 0) &&
+                (t_list[c_ptr->tptr].item_category == TV_GOLD) &&
                 !test_light(i, j)) {
                 c_ptr->fm = TRUE;
                 lite_spot(i, j);
@@ -25632,7 +25701,8 @@ int detect_sdoor() {
                 }
                 /* Staircases	 */
                 else if (((t_list[c_ptr->tptr].item_category == TV_UP_STAIR) ||
-                          (t_list[c_ptr->tptr].item_category == TV_DOWN_STAIR)) &&
+                          (t_list[c_ptr->tptr].item_category ==
+                           TV_DOWN_STAIR)) &&
                          !c_ptr->fm) {
                     c_ptr->fm = TRUE;
                     lite_spot(i, j);
@@ -25763,8 +25833,10 @@ void map_area() {
                         if (c_ptr->fval >= MIN_CAVE_WALL)
                             c_ptr->pl = TRUE;
                         else if ((c_ptr->tptr != 0) &&
-                                 (t_list[c_ptr->tptr].item_category >= TV_MIN_VISIBLE) &&
-                                 (t_list[c_ptr->tptr].item_category <= TV_MAX_VISIBLE))
+                                 (t_list[c_ptr->tptr].item_category >=
+                                  TV_MIN_VISIBLE) &&
+                                 (t_list[c_ptr->tptr].item_category <=
+                                  TV_MAX_VISIBLE))
                             c_ptr->fm = TRUE;
                     }
     prt_map();
@@ -26032,7 +26104,8 @@ int dir, y, x;
                 c_ptr->fm = TRUE;
                 change_trap(y, x);
                 disarm = TRUE;
-            } else if ((t_ptr->item_category == TV_CHEST) && (t_ptr->flags != 0)) {
+            } else if ((t_ptr->item_category == TV_CHEST) &&
+                       (t_ptr->flags != 0)) {
                 msg_print("Click!");
                 t_ptr->flags &= ~(CH_TRAPPED | CH_LOCKED);
                 disarm = TRUE;
@@ -26759,13 +26832,15 @@ int dir, y, x;
             t_ptr = &t_list[c_ptr->tptr];
             if ((t_ptr->item_category == TV_INVIS_TRAP) ||
                 (t_ptr->item_category == TV_CLOSED_DOOR) ||
-                (t_ptr->item_category == TV_VIS_TRAP) || (t_ptr->item_category == TV_OPEN_DOOR) ||
+                (t_ptr->item_category == TV_VIS_TRAP) ||
+                (t_ptr->item_category == TV_OPEN_DOOR) ||
                 (t_ptr->item_category == TV_SECRET_DOOR)) {
                 if (delete_object(y, x)) {
                     msg_print("There is a bright flash of light!");
                     destroy2 = TRUE;
                 }
-            } else if ((t_ptr->item_category == TV_CHEST) && (t_ptr->flags != 0)) {
+            } else if ((t_ptr->item_category == TV_CHEST) &&
+                       (t_ptr->flags != 0)) {
                 msg_print("Click!");
                 t_ptr->flags &= ~(CH_TRAPPED | CH_LOCKED);
                 destroy2 = TRUE;
@@ -28018,7 +28093,8 @@ void aim() {
             ident = FALSE;
             m_ptr = &py.misc;
             chance =
-                m_ptr->save + get_mana_multiplier(A_INT) - (int)inventory_p->level +
+                m_ptr->save + get_mana_multiplier(A_INT) -
+                (int)inventory_p->level +
                 (class_level_adj[m_ptr->pclass][CLA_DEVICE] * m_ptr->level / 3);
             if (py.flags.confused > 0)
                 chance = chance / 2;
@@ -28137,7 +28213,8 @@ void aim() {
                         m_ptr = &py.misc;
                         /* round half-way case up */
                         m_ptr->exp +=
-                            (inventory_p->level + (m_ptr->level >> 1)) / m_ptr->level;
+                            (inventory_p->level + (m_ptr->level >> 1)) /
+                            m_ptr->level;
                         prt_experience();
 
                         identify(&item_val);
@@ -28201,8 +28278,9 @@ void use() {
         inventory_p = &inventory[item_val];
         free_turn_flag = FALSE;
         m_ptr = &py.misc;
-        chance = m_ptr->save + get_mana_multiplier(A_INT) - (int)inventory_p->level - 5 +
-                 (class_level_adj[m_ptr->pclass][CLA_DEVICE] * m_ptr->level / 3);
+        chance =
+            m_ptr->save + get_mana_multiplier(A_INT) - (int)inventory_p->level -
+            5 + (class_level_adj[m_ptr->pclass][CLA_DEVICE] * m_ptr->level / 3);
         if (py.flags.confused > 0)
             chance = chance / 2;
         if ((chance < USE_DEVICE) && (randint(USE_DEVICE - chance + 1) == 1))
@@ -28320,8 +28398,8 @@ void use() {
                 if (!known1_p(inventory_p)) {
                     m_ptr = &py.misc;
                     /* round half-way case up */
-                    m_ptr->exp +=
-                        (inventory_p->level + (m_ptr->level >> 1)) / m_ptr->level;
+                    m_ptr->exp += (inventory_p->level + (m_ptr->level >> 1)) /
+                                  m_ptr->level;
                     prt_experience();
 
                     identify(&item_val);
@@ -28461,7 +28539,7 @@ char *malloc();
 static FILE *fileptr;
 static int8u xor_byte;
 static int from_savefile; /* can overwrite old savefile when save */
-static u32i start_time; /* time that play started */
+static u32i start_time;   /* time that play started */
 
 /* This save package was brought to by			-JWT-
    and							-RAK-
@@ -36256,10 +36334,10 @@ inven_type inventory[INVEN_ARRAY_SIZE];
 #endif
 
 /* Treasure related values					*/
-int16 inventory_counter = 0;    /* Total different obj's	*/
-int16 inventory_weight = 0; /* Cur carried weight	*/
-int16 equip_ctr = 0;    /* Cur equipment ctr	*/
-int16 tcptr;            /* Cur treasure heap ptr	*/
+int16 inventory_counter = 0; /* Total different obj's	*/
+int16 inventory_weight = 0;  /* Cur carried weight	*/
+int16 equip_ctr = 0;         /* Cur equipment ctr	*/
+int16 tcptr;                 /* Cur treasure heap ptr	*/
 
 /* ================================================================
  * monsters.c
@@ -40334,12 +40412,15 @@ inven_type *inventory_p;
     /* don't purchase known cursed items */
     if (inventory_p->ident & ID_DAMD)
         value = 0;
-    else if (((inventory_p->item_category >= TV_BOW) && (inventory_p->item_category <= TV_SWORD)) ||
+    else if (((inventory_p->item_category >= TV_BOW) &&
+              (inventory_p->item_category <= TV_SWORD)) ||
              ((inventory_p->item_category >= TV_BOOTS) &&
-              (inventory_p->item_category <= TV_SOFT_ARMOR))) { /* Weapons and armor	*/
+              (inventory_p->item_category <=
+               TV_SOFT_ARMOR))) { /* Weapons and armor	*/
         if (!known2_p(inventory_p))
             value = object_list[inventory_p->index].cost;
-        else if ((inventory_p->item_category >= TV_BOW) && (inventory_p->item_category <= TV_SWORD)) {
+        else if ((inventory_p->item_category >= TV_BOW) &&
+                 (inventory_p->item_category <= TV_SWORD)) {
             if (inventory_p->tohit < 0)
                 value = 0;
             else if (inventory_p->todam < 0)
@@ -40348,7 +40429,9 @@ inven_type *inventory_p;
                 value = 0;
             else
                 value = inventory_p->cost +
-                        (inventory_p->tohit + inventory_p->todam + inventory_p->toac) * 100;
+                        (inventory_p->tohit + inventory_p->todam +
+                         inventory_p->toac) *
+                            100;
         } else {
             if (inventory_p->toac < 0)
                 value = 0;
@@ -40356,7 +40439,8 @@ inven_type *inventory_p;
                 value = inventory_p->cost + inventory_p->toac * 100;
         }
     } else if ((inventory_p->item_category >= TV_SLING_AMMO) &&
-               (inventory_p->item_category <= TV_SPIKE)) { /* Ammo			*/
+               (inventory_p->item_category <=
+                TV_SPIKE)) { /* Ammo			*/
         if (!known2_p(inventory_p))
             value = object_list[inventory_p->index].cost;
         else {
@@ -40371,20 +40455,25 @@ inven_type *inventory_p;
                    so 20 * 5 == 100, which is comparable to weapon bonus above
                  */
                 value = inventory_p->cost +
-                        (inventory_p->tohit + inventory_p->todam + inventory_p->toac) * 5;
+                        (inventory_p->tohit + inventory_p->todam +
+                         inventory_p->toac) *
+                            5;
         }
-    } else if ((inventory_p->item_category == TV_SCROLL1) || (inventory_p->item_category == TV_SCROLL2) ||
+    } else if ((inventory_p->item_category == TV_SCROLL1) ||
+               (inventory_p->item_category == TV_SCROLL2) ||
                (inventory_p->item_category == TV_POTION1) ||
                (inventory_p->item_category ==
                 TV_POTION2)) { /* Potions, Scrolls, and Food	*/
         if (!known1_p(inventory_p))
             value = 20;
     } else if (inventory_p->item_category == TV_FOOD) {
-        if ((inventory_p->item_subcategory < (ITEM_SINGLE_STACK_MIN + MAX_MUSH)) &&
+        if ((inventory_p->item_subcategory <
+             (ITEM_SINGLE_STACK_MIN + MAX_MUSH)) &&
             !known1_p(inventory_p))
             value = 1;
     } else if ((inventory_p->item_category == TV_AMULET) ||
-               (inventory_p->item_category == TV_RING)) { /* Rings and amulets	*/
+               (inventory_p->item_category ==
+                TV_RING)) { /* Rings and amulets	*/
         if (!known1_p(inventory_p))
             /* player does not know what type of ring/amulet this is */
             value = 45;
@@ -40401,7 +40490,8 @@ inven_type *inventory_p;
             else
                 value = 70;
         } else if (known2_p(inventory_p))
-            value = inventory_p->cost + (inventory_p->cost / 20) * inventory_p->p1;
+            value =
+                inventory_p->cost + (inventory_p->cost / 20) * inventory_p->p1;
     }
     /* picks and shovels */
     else if (inventory_p->item_category == TV_DIGGING) {
@@ -40414,14 +40504,16 @@ inven_type *inventory_p;
                 /* some digging tools start with non-zero p1 values, so only
                    multiply the plusses by 100, make sure result is positive */
                 value = inventory_p->cost +
-                        (inventory_p->p1 - object_list[inventory_p->index].p1) * 100;
+                        (inventory_p->p1 - object_list[inventory_p->index].p1) *
+                            100;
                 if (value < 0)
                     value = 0;
             }
         }
     }
     /* multiply value by number of items if it is a group stack item */
-    if (inventory_p->item_subcategory > ITEM_GROUP_MIN) /* do not include torches here */
+    if (inventory_p->item_subcategory >
+        ITEM_GROUP_MIN) /* do not include torches here */
         value = value * inventory_p->number;
     return (value);
 }
@@ -40470,9 +40562,11 @@ int store_num;
             inventory_p = &s_ptr->store_inven[i].sitem;
             /* note: items with subval of gte ITEM_SINGLE_STACK_MAX only stack
                if their subvals match */
-            if (inventory_p->item_category == t_ptr->item_category && inventory_p->item_subcategory == t_ptr->item_subcategory &&
+            if (inventory_p->item_category == t_ptr->item_category &&
+                inventory_p->item_subcategory == t_ptr->item_subcategory &&
                 ((int)inventory_p->number + (int)t_ptr->number < 256) &&
-                (t_ptr->item_subcategory < ITEM_GROUP_MIN || (inventory_p->p1 == t_ptr->p1)))
+                (t_ptr->item_subcategory < ITEM_GROUP_MIN ||
+                 (inventory_p->p1 == t_ptr->p1)))
                 store_check = TRUE;
         }
     return (store_check);
@@ -40517,7 +40611,9 @@ inven_type *t_ptr;
         do {
             inventory_p = &s_ptr->store_inven[item_val].sitem;
             if (typ == inventory_p->item_category) {
-                if (subt == inventory_p->item_subcategory && /* Adds to other item	*/
+                if (subt ==
+                        inventory_p
+                            ->item_subcategory && /* Adds to other item	*/
                     subt >= ITEM_SINGLE_STACK_MIN &&
                     (subt < ITEM_GROUP_MIN || inventory_p->p1 == t_ptr->p1)) {
                     *ipos = item_val;
@@ -40526,7 +40622,8 @@ inven_type *t_ptr;
                        items strictly greater than group_min, not for torches,
                        this must be recalculated for entire group */
                     if (subt > ITEM_GROUP_MIN) {
-                        (void)sell_price(store_num, &icost, &dummy, inventory_p);
+                        (void)sell_price(store_num, &icost, &dummy,
+                                         inventory_p);
                         s_ptr->store_inven[item_val].scost = -icost;
                     }
                     /* must let group objects (except torches) stack over 24
@@ -40535,7 +40632,8 @@ inven_type *t_ptr;
                         inventory_p->number = 24;
                     flag = TRUE;
                 }
-            } else if (typ > inventory_p->item_category) { /* Insert into list		*/
+            } else if (typ > inventory_p->item_category) { /* Insert into list
+                                                            */
                 insert_store(store_num, item_val, icost, t_ptr);
                 flag = TRUE;
                 *ipos = item_val;
