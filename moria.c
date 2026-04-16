@@ -29108,14 +29108,7 @@ int *generate;
 
 /* Certain checks are ommitted for the wizard. -CJS- */
 
-#ifdef MAC
-int _get_char(generate, exit_flag)
-int *generate, *exit_flag;
-#else
-int get_char(generate)
-int *generate;
-#endif
-{
+int get_char(int *generate){
     int i, j;
     int fd, c, ok, total_count;
     u32i l, age, time_saved;
@@ -29129,27 +29122,11 @@ int *generate;
     store_type *st_ptr;
     int8u char_tmp, ychar, xchar, count;
     int8u version_maj, version_min, patch_level;
-#if defined(MSDOS) || defined(ATARI_ST)
-    inven_type *t_ptr;
-#endif
-
-#ifdef MAC
-    *exit_flag = FALSE;
-#endif
 
     nosignals();
     *generate = TRUE;
     fd = -1;
 
-#ifndef MAC
-    /* Not required for Mac, because the file name is obtained through a dialog.
-       There is no way for a non existnat file to be specified.  -BS-	*/
-    if (access(savefile, 0) != 0) {
-        signals();
-        msg_print("Savefile does not exist.");
-        return FALSE; /* Don't bother with messages here. File absent. */
-    }
-#endif
 
     clear_screen();
 
@@ -29162,17 +29139,9 @@ int *generate;
     /* Allow restoring a file belonging to someone else, if we can delete it. */
     /* Hence first try to read without doing a chmod. */
 
-#if defined(MAC) || defined(AMIGA)
-    else if ((fd = open(savefile, O_RDONLY)) < 0)
-#else
-#ifdef ATARI_ST
-    else if (FALSE)
-#else
     else if ((fd = open(savefile, O_RDONLY, 0)) < 0 &&
              (chmod(savefile, 0400) < 0 ||
               (fd = open(savefile, O_RDONLY, 0)) < 0))
-#endif
-#endif
         msg_print("Can't open file for reading.");
     else {
         turn = -1;
@@ -29181,17 +29150,9 @@ int *generate;
         (void)close(fd);
         fd = -1; /* Make sure it isn't closed again */
                  /* GCC for atari st defines atarist */
-#if defined(atarist) || defined(ATARI_ST) || defined(THINK_C) || defined(MSDOS)
-        fileptr = fopen(savefile, "rb");
-#else
         fileptr = fopen(savefile, "r");
-#endif
         if (fileptr == NULL)
             goto error;
-
-#ifdef MAC
-        macbeginwait();
-#endif
 
         prt("Restoring Memory...", 0, 0);
         put_qio();
@@ -29211,13 +29172,6 @@ int *generate;
         /* COMPAT support savefiles from 5.0.14 to 5.0.17 */
         /* support savefiles from 5.1.0 to present */
         if ((version_maj != CUR_VERSION_MAJ)
-#if 0
-	  /* As of version 5.4, accept savefiles even if they have higher
-	     version numbers.  The savefile format was frozen as of version
-	     5.2.2.  */
-	  || (version_min > CUR_VERSION_MIN)
-	  || (version_min == CUR_VERSION_MIN && patch_level > PATCH_LEVEL)
-#endif
             || (version_min == 0 && patch_level < 14)) {
             prt("Sorry. This savefile is from a different version of umoria.",
                 2, 0);
@@ -29458,11 +29412,7 @@ int *generate;
             if ((version_min >= 3) || (version_min == 2 && patch_level >= 2))
                 rd_long((u32i *)&birth_date);
             else
-#ifdef MAC
-                birth_date = time((time_t *)0);
-#else
                 birth_date = time((long *)0);
-#endif
         }
         if ((c = getc(fileptr)) == EOF || (l & 0x80000000L)) {
             if ((l & 0x80000000L) == 0) {
@@ -29541,10 +29491,6 @@ int *generate;
             rd_byte(&count);
             rd_byte(&char_tmp);
             for (i = count; i > 0; i--) {
-#ifndef ATARIST_MWC
-                if (c_ptr >= &cave[MAX_HEIGHT][0])
-                    goto error;
-#endif
                 c_ptr->fval = char_tmp & 0xF;
                 c_ptr->lr = (char_tmp >> 4) & 0x1;
                 c_ptr->fm = (char_tmp >> 5) & 0x1;
@@ -29565,22 +29511,6 @@ int *generate;
             goto error;
         for (i = MIN_MONIX; i < mfptr; i++)
             rd_monster(&m_list[i]);
-
-#if defined(MSDOS) || defined(ATARI_ST)
-        /* change walls and floors to graphic symbols */
-        t_ptr = &t_list[tcptr - 1];
-        for (i = tcptr - 1; i >= MIN_TRIX; i--) {
-#ifdef MSDOS
-            if (t_ptr->tchar == '#')
-                t_ptr->tchar = wallsym;
-#endif
-#ifdef ATARI_ST
-            if (t_ptr->tchar == '#')
-                t_ptr->tchar = (unsigned char)240;
-#endif
-            t_ptr--;
-        }
-#endif
 
         *generate = FALSE; /* We have restored a cave - no need to generate. */
 
@@ -29631,10 +29561,6 @@ int *generate;
         if (fd >= 0)
             (void)close(fd);
 
-#ifdef MAC
-        macendwait();
-#endif
-
         if (!ok)
             msg_print("Error during reading of file.");
         else {
@@ -29662,11 +29588,7 @@ scoreboard; it will not be scored again.");
                 /* rotate store inventory, depending on how old the save file */
                 /* is foreach day old (rounded up), call store_maint */
                 /* calculate age in seconds */
-#ifdef MAC
-                start_time = time((time_t *)0);
-#else
                 start_time = time((long *)0);
-#endif
                 /* check for reasonable values of time here ... */
                 if (start_time < time_saved)
                     age = 0;
@@ -29703,12 +29625,7 @@ scoreboard; it will not be scored again.");
     turn = -1;
     prt("Please try again without that savefile.", 1, 0);
     signals();
-#ifdef MAC
-    *exit_flag = TRUE;
-#else
     exit_game();
-#endif
-
     return FALSE; /* not reached, unless on mac */
 }
 
