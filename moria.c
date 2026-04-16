@@ -29178,15 +29178,11 @@ int get_char(int *generate){
             rd_short(&int16u_tmp);
         rd_long(&l);
 
-		find_cut = !!(l & 0x1);
-		find_examine = !!(l & 0x2);
-		find_prself = !!(l & 0x4);
-		find_bound = !!(l & 0x8) ;
-		prompt_carry_flag = !!(l & 0x10);
-		rogue_like_commands = !!(l & 0x20);
-		show_weight_flag = !!(l & 0x40);
-		highlight_seams = !!(l & 0x80);
-		find_ignore_doors = !!(l & 0x100);
+		for (int i = 0; i < 9; i++) {
+			*((int* []){&find_cut, &find_examine, &find_prself, &find_bound,
+					&prompt_carry_flag, &rogue_like_commands, &show_weight_flag,
+					&highlight_seams, &find_ignore_doors}[i]) = !!(l & (1 << i));
+		}
         /* save files before 5.2.2 don't have sound_beep_flag, set it on
            for compatibility */
 		sound_beep_flag = !!((version_min < 2) || (version_min == 2 && patch_level < 2)) || !!(l & 0x200);
