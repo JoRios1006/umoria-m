@@ -29085,26 +29085,6 @@ char *fnam;
     return TRUE;
 }
 
-#ifdef MAC
-/* Wrapper to set the appropriate directory */
-int get_char(generate)
-int *generate;
-{
-    int rc, exit_flag;
-    int16 vrefnum;
-
-    (void)getsavedefaults(savefile, &vrefnum);
-
-    changedirectory(vrefnum);
-    rc = _get_char(generate, &exit_flag);
-    restoredirectory();
-
-    if (exit_flag)
-        exit_game();
-
-    return (rc);
-}
-#endif
 
 /* Certain checks are ommitted for the wizard. -CJS- */
 
@@ -29126,7 +29106,6 @@ int get_char(int *generate){
     nosignals();
     *generate = TRUE;
     fd = -1;
-
 
     clear_screen();
 
@@ -29199,58 +29178,21 @@ int get_char(int *generate){
             rd_short(&int16u_tmp);
         rd_long(&l);
 
-        if (l & 0x1)
-            find_cut = TRUE;
-        else
-            find_cut = FALSE;
-        if (l & 0x2)
-            find_examine = TRUE;
-        else
-            find_examine = FALSE;
-        if (l & 0x4)
-            find_prself = TRUE;
-        else
-            find_prself = FALSE;
-        if (l & 0x8)
-            find_bound = TRUE;
-        else
-            find_bound = FALSE;
-        if (l & 0x10)
-            prompt_carry_flag = TRUE;
-        else
-            prompt_carry_flag = FALSE;
-        if (l & 0x20)
-            rogue_like_commands = TRUE;
-        else
-            rogue_like_commands = FALSE;
-        if (l & 0x40)
-            show_weight_flag = TRUE;
-        else
-            show_weight_flag = FALSE;
-        if (l & 0x80)
-            highlight_seams = TRUE;
-        else
-            highlight_seams = FALSE;
-        if (l & 0x100)
-            find_ignore_doors = TRUE;
-        else
-            find_ignore_doors = FALSE;
+		find_cut = !!(l & 0x1);
+		find_examine = !!(l & 0x2);
+		find_prself = !!(l & 0x4);
+		find_bound = !!(l & 0x8) ;
+		prompt_carry_flag = !!(l & 0x10);
+		rogue_like_commands = !!(l & 0x20);
+		show_weight_flag = !!(l & 0x40);
+		highlight_seams = !!(l & 0x80);
+		find_ignore_doors = !!(l & 0x100);
         /* save files before 5.2.2 don't have sound_beep_flag, set it on
            for compatibility */
-        if ((version_min < 2) || (version_min == 2 && patch_level < 2))
-            sound_beep_flag = TRUE;
-        else if (l & 0x200)
-            sound_beep_flag = TRUE;
-        else
-            sound_beep_flag = FALSE;
+		sound_beep_flag = !!((version_min < 2) || (version_min == 2 && patch_level < 2)) || !!(l & 0x200);
         /* save files before 5.2.2 don't have display_counts, set it on
            for compatibility */
-        if ((version_min < 2) || (version_min == 2 && patch_level < 2))
-            display_counts = TRUE;
-        else if (l & 0x400)
-            display_counts = TRUE;
-        else
-            display_counts = FALSE;
+		display_counts =  !!(l & 0x400) || !!((version_min < 2) || (version_min == 2 && patch_level < 2));
 
         /* Don't allow resurrection of total_winner characters.  It causes
            problems because the character level is out of the allowed range.  */
