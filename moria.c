@@ -10263,7 +10263,6 @@ void calc_spells(int stat) {
     if (!can_cast_spells && !spell_forgotten)
         goto UPDATE_FLAG;
 
-    /* --- forget spells above current level --- */
     u32i above_level = 0;
     int i = 31;
 BUILD_ABOVE_LEVEL:;
@@ -10300,32 +10299,31 @@ CALC_ALLOWED:;
     i = 0;
 BUILD_ELIGIBLE:;
     int j = spell_order[i];
-    int valid = (unsigned)j < 32u;
-    u32i jmask = 1L << (j * valid);
-    eligible_recall |= jmask * valid * !!(jmask & spell_forgotten) *
-                       (spells[j * valid].slevel <= player_p->level);
-    eligible_forget |= jmask * valid * !!(jmask & can_cast_spells);
+    bool is_valid = (unsigned)j < 32u;
+    u32i jmask = 1L << (j * is_valid);
+    eligible_recall |= jmask * is_valid * !!(jmask & spell_forgotten) *
+                       (spells[j * is_valid].slevel <= player_p->level);
+    eligible_forget |= jmask * is_valid * !!(jmask & can_cast_spells);
     if (++i < 32)
         goto BUILD_ELIGIBLE;
 
     if (!new_spells)
         goto UPDATE_FLAG;
 
-    /* --- recall forgotten spells --- */
     i = 0;
     u32i newly_changed = 0;
     if (new_spells <= 0 || !eligible_recall)
         goto PRUNE_SPELLS;
 RECALL_SPELLS:;
     j = spell_order[i];
-    valid = (unsigned)j < 32u;
-    mask = 1L << (j * valid);
-    int recall = valid & !!(mask & eligible_recall);
-    new_spells -= recall;
-    spell_forgotten &= ~(mask * recall);
-    can_cast_spells |= (mask * recall);
-    eligible_recall &= ~(mask * recall);
-    newly_changed |= (mask * recall);
+    is_valid = (unsigned)j < 32u;
+    mask = 1L << (j * is_valid);
+    bool can_recall = is_valid & !!(mask & eligible_recall);
+    new_spells -= can_recall;
+    spell_forgotten &= ~(mask * can_recall);
+    can_cast_spells |= (mask * can_recall);
+    eligible_recall &= ~(mask * can_recall);
+    newly_changed |= (mask * can_recall);
     if (++i < 32 && new_spells > 0 && eligible_recall)
         goto RECALL_SPELLS;
 
@@ -10347,9 +10345,9 @@ PRUNE_SPELLS:;
         goto DONE_SPELLS;
 PRUNE_LOOP:;
     j = spell_order[bit_idx];
-    valid = (unsigned)j < 32u;
-    mask = 1L << (j * valid);
-    int discard = valid & !!(mask & eligible_forget);
+    is_valid = (unsigned)j < 32u;
+    mask = 1L << (j * is_valid);
+    bool discard = is_valid & !!(mask & eligible_forget);
     can_cast_spells &= ~(mask * discard);
     spell_forgotten |= (mask * discard);
     eligible_forget &= ~(mask * discard);
@@ -10358,7 +10356,7 @@ PRUNE_LOOP:;
     if (--bit_idx >= 0 && new_spells < 0 && eligible_forget)
         goto PRUNE_LOOP;
 DONE_SPELLS:;
-    new_spells = new_spells * (new_spells > 0); /* clamp negative to 0 */
+    new_spells = new_spells * (new_spells > 0);
 
     m = newly_changed;
     if (!m)
@@ -43007,11 +43005,7 @@ char *argv[];
             death = TRUE;
     } else { /* Create character      */
         create_character();
-#ifdef MAC
-        birth_date = time((time_t *)0);
-#else
-        birth_date = time((long *)0);
-#endif
+        birth_date = 0xDEADBEEF;
         char_inven_init();
         py.flags.food = 7500;
         py.flags.food_digested = 2;
