@@ -1,22 +1,23 @@
-# UMoria
-Official source code of the roguelike UMoria.
+# UMoria Refactor
 
-## Introduction
-This repository contains the official source code of the roguelike UMoria (see http://en.wikipedia.org/wiki/Moria_%28video_game%29 and http://www.roguebasin.com/index.php?title=Moria for more info) as retrieved from Beej's Moria Page (http://beej.us/moria/).
+Legacy roguelike. Original from Beej's Moria Page.
 
-I have checked in each version in order and tagged it, so that those interested in the historical development of the source will be able to explore it using Git/Github tools.
+## What Here
 
-I have no plans to host official binaries here at this time, but am open to it if people are interested.
+C23 port of UMoria. Bitmask spell logic. Branchless math. goto loops. Data-oriented. High-performance maintenance.
 
-## Personal projects
-Personal projects by myself and others may be found on branches and/or forks. These will not be merged into the master branch without the official blessing of David Grabiner (see http://www.remarque.org/~grabiner/moria.html or http://www-math.bgsu.edu/~grabine/moria.html), the official UMoria maintainer.
+## Legal
 
-Binaries for personal projects may be released here, however.
+- Versions 5.5.2 and older: GPLv2 + Public Domain (Free Moria project)
+- 5.6+: GPLv3 (David Grabiner)
 
-## License Information
-The source code to versions 5.5.2 and older is licensed under a combination of GPLv2 and Public Domain, per the Free Moria project (http://free-moria.sourceforge.net/).
+This fork: respect original license. Code stay legal.
 
-David Grabiner's 5.6 changes have been released under the GPLv3.
+## Personal Work
 
-## Background
-I have a long-standing interest in UMoria. It was my first roguelike, and I eventually produced the DJGPP 32-bit DOS port, which has stood as the last official PC release. Later, I participated in the Free Moria project, and ever since then I've toyed with the idea of playing with the source code once in a while. I've finally decided to at least start this project to get the official source code history onto Github, and in parallel I've produced a Cygwin port of the Unix source for use on modern Windows PCs.
+Branches have refactor experiments. Not merge to main without David Grabiner say-so (official maintainer).
+
+More info:
+- Original: http://beej.us/moria/
+- UMoria: http://www.remarque.org/~grabiner/moria.html
+- Roguelike wiki: http://www.roguebasin.com/index.php?title=Moria
