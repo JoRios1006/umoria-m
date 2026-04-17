@@ -29085,10 +29085,8 @@ char *fnam;
     return TRUE;
 }
 
-
 /* Certain checks are ommitted for the wizard. -CJS- */
-
-int get_char(int *generate){
+int get_char(int *generate) {
     int i, j;
     int fd, c, ok, total_count;
     u32i l, age, time_saved;
@@ -29105,466 +29103,461 @@ int get_char(int *generate){
 
     nosignals();
     *generate = TRUE;
-    fd = -1;
-
     clear_screen();
 
     (void)sprintf(temp, "Savefile %s present. Attempting restore.", savefile);
     put_buffer(temp, 23, 0);
 
-    if (turn >= 0)
+    if (turn >= 0) {
         msg_print("IMPOSSIBLE! Attempt to restore while still alive!");
+        goto abort;
+    }
 
-    /* Allow restoring a file belonging to someone else, if we can delete it. */
-    /* Hence first try to read without doing a chmod. */
-
-    else if ((fd = open(savefile, O_RDONLY, 0)) < 0 &&
-             (chmod(savefile, 0400) < 0 ||
-              (fd = open(savefile, O_RDONLY, 0)) < 0))
+    /* try open without chmod first, then with */
+    fd = open(savefile, O_RDONLY, 0);
+    if (fd < 0 &&
+        (chmod(savefile, 0400) < 0 || (fd = open(savefile, O_RDONLY, 0)) < 0)) {
         msg_print("Can't open file for reading.");
-    else {
-        turn = -1;
-        ok = TRUE;
+        goto abort;
+    }
 
-        (void)close(fd);
-        fd = -1; /* Make sure it isn't closed again */
-                 /* GCC for atari st defines atarist */
-        fileptr = fopen(savefile, "r");
-        if (fileptr == NULL)
+    turn = -1;
+    ok = TRUE;
+    close(fd);
+    fd = -1;
+
+    fileptr = fopen(savefile, "r");
+    if (fileptr == NULL)
+        goto error;
+
+    prt("Restoring Memory...", 0, 0);
+    put_qio();
+
+    DEBUG(logfile = fopen("IO_LOG", "a"));
+    DEBUG(fprintf(logfile, "Reading data from %s\n", savefile));
+
+    /* --- read version --- */
+    xor_byte = 0;
+    rd_byte(&version_maj);
+    xor_byte = 0;
+    rd_byte(&version_min);
+    xor_byte = 0;
+    rd_byte(&patch_level);
+    xor_byte = 0;
+    rd_byte(&xor_byte);
+
+    if (version_maj != CUR_VERSION_MAJ ||
+        (version_min == 0 && patch_level < 14)) {
+        prt("Sorry. This savefile is from a different version of umoria.", 2,
+            0);
+        goto error;
+    }
+
+    /* --- creature recall --- */
+    rd_short(&int16u_tmp);
+    while (int16u_tmp != 0xFFFF) {
+        if (int16u_tmp >= MAX_CREATURES)
             goto error;
-
-        prt("Restoring Memory...", 0, 0);
-        put_qio();
-
-        DEBUG(logfile = fopen("IO_LOG", "a"));
-        DEBUG(fprintf(logfile, "Reading data from %s\n", savefile));
-
-        xor_byte = 0;
-        rd_byte(&version_maj);
-        xor_byte = 0;
-        rd_byte(&version_min);
-        xor_byte = 0;
-        rd_byte(&patch_level);
-        xor_byte = 0;
-        rd_byte(&xor_byte);
-
-        /* COMPAT support savefiles from 5.0.14 to 5.0.17 */
-        /* support savefiles from 5.1.0 to present */
-        if ((version_maj != CUR_VERSION_MAJ)
-            || (version_min == 0 && patch_level < 14)) {
-            prt("Sorry. This savefile is from a different version of umoria.",
-                2, 0);
-            goto error;
-        }
-
+        r_ptr = &c_recall[int16u_tmp];
+        rd_long(&r_ptr->r_cmove);
+        rd_long(&r_ptr->r_spells);
+        rd_short(&r_ptr->r_kills);
+        rd_short(&r_ptr->r_deaths);
+        rd_short(&r_ptr->r_cdefense);
+        rd_byte(&r_ptr->r_wake);
+        rd_byte(&r_ptr->r_ignore);
+        rd_bytes(r_ptr->r_attacks, MAX_MON_NATTACK);
         rd_short(&int16u_tmp);
-        while (int16u_tmp != 0xFFFF) {
-            if (int16u_tmp >= MAX_CREATURES)
+    }
+
+    /* compat: pre-5.2.2 had log_index here */
+    if (version_min < 2 || (version_min == 2 && patch_level < 2))
+        rd_short(&int16u_tmp);
+
+    /* --- option flags --- */
+    rd_long(&l);
+    int *option_targets[] = {
+        &find_cut,         &find_examine,      &find_prself,
+        &find_bound,       &prompt_carry_flag, &rogue_like_commands,
+        &show_weight_flag, &highlight_seams,   &find_ignore_doors};
+    for (int i = 0; i < 9; i++)
+        *option_targets[i] = !!(l & (1 << i));
+
+    int pre522 = (version_min < 2) || (version_min == 2 && patch_level < 2);
+    sound_beep_flag = pre522 || !!(l & 0x200);
+    display_counts = pre522 || !!(l & 0x400);
+
+    /* --- wizard / resurrection checks --- */
+    if (to_be_wizard && (l & 0x40000000L)) {
+        msg_print("Sorry, this character is retired from moria.");
+        msg_print("You can not resurrect a retired character.");
+        goto error;
+    }
+
+    if (to_be_wizard && (l & 0x80000000L) &&
+        get_check("Resurrect a dead character?"))
+        l &= ~0x80000000L;
+
+    if (l & 0x80000000L)
+        goto skip_character;
+
+    /* --- character data --- */
+    m_ptr = &py.misc;
+    rd_string(m_ptr->name);
+    rd_byte(&m_ptr->male);
+    rd_long((u32i *)&m_ptr->au);
+    rd_long((u32i *)&m_ptr->max_exp);
+    rd_long((u32i *)&m_ptr->exp);
+    rd_short(&m_ptr->exp_frac);
+    rd_short(&m_ptr->age);
+    rd_short(&m_ptr->ht);
+    rd_short(&m_ptr->wt);
+    rd_short(&m_ptr->level);
+    rd_short(&m_ptr->max_dlv);
+    rd_short((int16u *)&m_ptr->srh);
+    rd_short((int16u *)&m_ptr->fos);
+    rd_short((int16u *)&m_ptr->bth);
+    rd_short((int16u *)&m_ptr->bthb);
+    rd_short((int16u *)&m_ptr->max_mana);
+    rd_short((int16u *)&m_ptr->mhp);
+    rd_short((int16u *)&m_ptr->ptohit);
+    rd_short((int16u *)&m_ptr->ptodam);
+    rd_short((int16u *)&m_ptr->pac);
+    rd_short((int16u *)&m_ptr->ptoac);
+    rd_short((int16u *)&m_ptr->dis_th);
+    rd_short((int16u *)&m_ptr->dis_td);
+    rd_short((int16u *)&m_ptr->dis_ac);
+    rd_short((int16u *)&m_ptr->dis_tac);
+    rd_short((int16u *)&m_ptr->disarm);
+    rd_short((int16u *)&m_ptr->save);
+    rd_short((int16u *)&m_ptr->sc);
+    rd_short((int16u *)&m_ptr->stl);
+    rd_byte(&m_ptr->pclass);
+    rd_byte(&m_ptr->prace);
+    rd_byte(&m_ptr->hitdie);
+    rd_byte(&m_ptr->expfact);
+    rd_short((int16u *)&m_ptr->int_mana);
+    rd_short(&m_ptr->frac_mana);
+    rd_short((int16u *)&m_ptr->chp);
+    rd_short(&m_ptr->chp_frac);
+    for (i = 0; i < 4; i++)
+        rd_string(m_ptr->history[i]);
+
+    s_ptr = &py.stats;
+    rd_bytes(s_ptr->max_stat, 6);
+    rd_bytes(s_ptr->cur_stat, 6);
+    rd_shorts((int16u *)s_ptr->mod_stat, 6);
+    rd_bytes(s_ptr->use_stat, 6);
+
+    f_ptr = &py.flags;
+    rd_long(&f_ptr->status);
+    rd_short((int16u *)&f_ptr->rest);
+    rd_short((int16u *)&f_ptr->blind);
+    rd_short((int16u *)&f_ptr->paralysis);
+    rd_short((int16u *)&f_ptr->confused);
+    rd_short((int16u *)&f_ptr->food);
+    rd_short((int16u *)&f_ptr->food_digested);
+    rd_short((int16u *)&f_ptr->protection);
+    rd_short((int16u *)&f_ptr->speed);
+    rd_short((int16u *)&f_ptr->fast);
+    rd_short((int16u *)&f_ptr->slow);
+    rd_short((int16u *)&f_ptr->afraid);
+    rd_short((int16u *)&f_ptr->poisoned);
+    rd_short((int16u *)&f_ptr->image);
+    rd_short((int16u *)&f_ptr->protevil);
+    rd_short((int16u *)&f_ptr->invuln);
+    rd_short((int16u *)&f_ptr->hero);
+    rd_short((int16u *)&f_ptr->shero);
+    rd_short((int16u *)&f_ptr->blessed);
+    rd_short((int16u *)&f_ptr->resist_heat);
+    rd_short((int16u *)&f_ptr->resist_cold);
+    rd_short((int16u *)&f_ptr->detect_inv);
+    rd_short((int16u *)&f_ptr->word_recall);
+    rd_short((int16u *)&f_ptr->see_infra);
+    rd_short((int16u *)&f_ptr->tim_infra);
+    rd_byte(&f_ptr->see_inv);
+    rd_byte(&f_ptr->teleport);
+    rd_byte(&f_ptr->free_act);
+    rd_byte(&f_ptr->slow_digest);
+    rd_byte(&f_ptr->aggravate);
+    rd_byte(&f_ptr->fire_resist);
+    rd_byte(&f_ptr->cold_resist);
+    rd_byte(&f_ptr->acid_resist);
+    rd_byte(&f_ptr->regenerate);
+    rd_byte(&f_ptr->lght_resist);
+    rd_byte(&f_ptr->ffall);
+    rd_byte(&f_ptr->sustain_str);
+    rd_byte(&f_ptr->sustain_int);
+    rd_byte(&f_ptr->sustain_wis);
+    rd_byte(&f_ptr->sustain_con);
+    rd_byte(&f_ptr->sustain_dex);
+    rd_byte(&f_ptr->sustain_chr);
+    rd_byte(&f_ptr->confuse_monster);
+    rd_byte(&f_ptr->new_spells);
+
+    rd_short((int16u *)&missile_ctr);
+    rd_long((u32i *)&turn);
+    rd_short((int16u *)&inventory_counter);
+    if (inventory_counter > INVEN_WIELD)
+        goto error;
+
+    for (i = 0; i < inventory_counter; i++)
+        rd_item(&inventory[i]);
+    for (i = INVEN_WIELD; i < INVEN_ARRAY_SIZE; i++)
+        rd_item(&inventory[i]);
+
+    rd_short((int16u *)&inventory_weight);
+    rd_short((int16u *)&equip_ctr);
+    rd_long(&can_cast_spells);
+    rd_long(&spell_worked);
+    rd_long(&spell_forgotten);
+    rd_bytes(spell_order, 32);
+    rd_bytes(object_ident, OBJECT_IDENT_SIZE);
+    rd_long(&randes_seed);
+    rd_long(&town_seed);
+    rd_short((int16u *)&last_msg);
+    for (i = 0; i < MAX_SAVE_MSG; i++)
+        rd_string(old_msg[i]);
+
+    rd_short((int16u *)&panic_save);
+    rd_short((int16u *)&total_winner);
+    rd_short((int16u *)&noscore);
+    rd_shorts(player_hp, MAX_PLAYER_LEVEL);
+
+    /* --- stores (new format) --- */
+    int has_new_stores =
+        (version_min >= 2) || (version_min == 1 && patch_level >= 3);
+    if (has_new_stores) {
+        for (i = 0; i < MAX_STORES; i++) {
+            st_ptr = &store[i];
+            rd_long((u32i *)&st_ptr->store_open);
+            rd_short((int16u *)&st_ptr->insult_cur);
+            rd_byte(&st_ptr->owner);
+            rd_byte(&st_ptr->store_ctr);
+            rd_short(&st_ptr->good_buy);
+            rd_short(&st_ptr->bad_buy);
+            if (st_ptr->store_ctr > STORE_INVEN_MAX)
                 goto error;
-            r_ptr = &c_recall[int16u_tmp];
-            rd_long(&r_ptr->r_cmove);
-            rd_long(&r_ptr->r_spells);
-            rd_short(&r_ptr->r_kills);
-            rd_short(&r_ptr->r_deaths);
-            rd_short(&r_ptr->r_cdefense);
-            rd_byte(&r_ptr->r_wake);
-            rd_byte(&r_ptr->r_ignore);
-            rd_bytes(r_ptr->r_attacks, MAX_MON_NATTACK);
-            rd_short(&int16u_tmp);
-        }
-
-        /* for save files before 5.2.2, read and ignore log_index (sic) */
-        if ((version_min < 2) || (version_min == 2 && patch_level < 2))
-            rd_short(&int16u_tmp);
-        rd_long(&l);
-
-		for (int i = 0; i < 9; i++) {
-			*((int* []){&find_cut, &find_examine, &find_prself, &find_bound,
-					&prompt_carry_flag, &rogue_like_commands, &show_weight_flag,
-					&highlight_seams, &find_ignore_doors}[i]) = !!(l & (1 << i));
-		}
-        /* save files before 5.2.2 don't have sound_beep_flag, set it on
-           for compatibility */
-		sound_beep_flag = !!((version_min < 2) || (version_min == 2 && patch_level < 2)) || !!(l & 0x200);
-        /* save files before 5.2.2 don't have display_counts, set it on
-           for compatibility */
-		display_counts =  !!(l & 0x400) || !!((version_min < 2) || (version_min == 2 && patch_level < 2));
-
-        /* Don't allow resurrection of total_winner characters.  It causes
-           problems because the character level is out of the allowed range.  */
-        if (to_be_wizard && (l & 0x40000000L)) {
-            msg_print("Sorry, this character is retired from moria.");
-            msg_print("You can not resurrect a retired character.");
-        } else if (to_be_wizard && (l & 0x80000000L) &&
-                   get_check("Resurrect a dead character?"))
-            l &= ~0x80000000L;
-        if ((l & 0x80000000L) == 0) {
-            m_ptr = &py.misc;
-            rd_string(m_ptr->name);
-            rd_byte(&m_ptr->male);
-            rd_long((u32i *)&m_ptr->au);
-            rd_long((u32i *)&m_ptr->max_exp);
-            rd_long((u32i *)&m_ptr->exp);
-            rd_short(&m_ptr->exp_frac);
-            rd_short(&m_ptr->age);
-            rd_short(&m_ptr->ht);
-            rd_short(&m_ptr->wt);
-            rd_short(&m_ptr->level);
-            rd_short(&m_ptr->max_dlv);
-            rd_short((int16u *)&m_ptr->srh);
-            rd_short((int16u *)&m_ptr->fos);
-            rd_short((int16u *)&m_ptr->bth);
-            rd_short((int16u *)&m_ptr->bthb);
-            rd_short((int16u *)&m_ptr->max_mana);
-            rd_short((int16u *)&m_ptr->mhp);
-            rd_short((int16u *)&m_ptr->ptohit);
-            rd_short((int16u *)&m_ptr->ptodam);
-            rd_short((int16u *)&m_ptr->pac);
-            rd_short((int16u *)&m_ptr->ptoac);
-            rd_short((int16u *)&m_ptr->dis_th);
-            rd_short((int16u *)&m_ptr->dis_td);
-            rd_short((int16u *)&m_ptr->dis_ac);
-            rd_short((int16u *)&m_ptr->dis_tac);
-            rd_short((int16u *)&m_ptr->disarm);
-            rd_short((int16u *)&m_ptr->save);
-            rd_short((int16u *)&m_ptr->sc);
-            rd_short((int16u *)&m_ptr->stl);
-            rd_byte(&m_ptr->pclass);
-            rd_byte(&m_ptr->prace);
-            rd_byte(&m_ptr->hitdie);
-            rd_byte(&m_ptr->expfact);
-            rd_short((int16u *)&m_ptr->int_mana);
-            rd_short(&m_ptr->frac_mana);
-            rd_short((int16u *)&m_ptr->chp);
-            rd_short(&m_ptr->chp_frac);
-            for (i = 0; i < 4; i++)
-                rd_string(m_ptr->history[i]);
-
-            s_ptr = &py.stats;
-            rd_bytes(s_ptr->max_stat, 6);
-            rd_bytes(s_ptr->cur_stat, 6);
-            rd_shorts((int16u *)s_ptr->mod_stat, 6);
-            rd_bytes(s_ptr->use_stat, 6);
-
-            f_ptr = &py.flags;
-            rd_long(&f_ptr->status);
-            rd_short((int16u *)&f_ptr->rest);
-            rd_short((int16u *)&f_ptr->blind);
-            rd_short((int16u *)&f_ptr->paralysis);
-            rd_short((int16u *)&f_ptr->confused);
-            rd_short((int16u *)&f_ptr->food);
-            rd_short((int16u *)&f_ptr->food_digested);
-            rd_short((int16u *)&f_ptr->protection);
-            rd_short((int16u *)&f_ptr->speed);
-            rd_short((int16u *)&f_ptr->fast);
-            rd_short((int16u *)&f_ptr->slow);
-            rd_short((int16u *)&f_ptr->afraid);
-            rd_short((int16u *)&f_ptr->poisoned);
-            rd_short((int16u *)&f_ptr->image);
-            rd_short((int16u *)&f_ptr->protevil);
-            rd_short((int16u *)&f_ptr->invuln);
-            rd_short((int16u *)&f_ptr->hero);
-            rd_short((int16u *)&f_ptr->shero);
-            rd_short((int16u *)&f_ptr->blessed);
-            rd_short((int16u *)&f_ptr->resist_heat);
-            rd_short((int16u *)&f_ptr->resist_cold);
-            rd_short((int16u *)&f_ptr->detect_inv);
-            rd_short((int16u *)&f_ptr->word_recall);
-            rd_short((int16u *)&f_ptr->see_infra);
-            rd_short((int16u *)&f_ptr->tim_infra);
-            rd_byte(&f_ptr->see_inv);
-            rd_byte(&f_ptr->teleport);
-            rd_byte(&f_ptr->free_act);
-            rd_byte(&f_ptr->slow_digest);
-            rd_byte(&f_ptr->aggravate);
-            rd_byte(&f_ptr->fire_resist);
-            rd_byte(&f_ptr->cold_resist);
-            rd_byte(&f_ptr->acid_resist);
-            rd_byte(&f_ptr->regenerate);
-            rd_byte(&f_ptr->lght_resist);
-            rd_byte(&f_ptr->ffall);
-            rd_byte(&f_ptr->sustain_str);
-            rd_byte(&f_ptr->sustain_int);
-            rd_byte(&f_ptr->sustain_wis);
-            rd_byte(&f_ptr->sustain_con);
-            rd_byte(&f_ptr->sustain_dex);
-            rd_byte(&f_ptr->sustain_chr);
-            rd_byte(&f_ptr->confuse_monster);
-            rd_byte(&f_ptr->new_spells);
-
-            rd_short((int16u *)&missile_ctr);
-            rd_long((u32i *)&turn);
-            rd_short((int16u *)&inventory_counter);
-            if (inventory_counter > INVEN_WIELD)
-                goto error;
-            for (i = 0; i < inventory_counter; i++)
-                rd_item(&inventory[i]);
-            for (i = INVEN_WIELD; i < INVEN_ARRAY_SIZE; i++)
-                rd_item(&inventory[i]);
-            rd_short((int16u *)&inventory_weight);
-            rd_short((int16u *)&equip_ctr);
-            rd_long(&can_cast_spells);
-            rd_long(&spell_worked);
-            rd_long(&spell_forgotten);
-            rd_bytes(spell_order, 32);
-            rd_bytes(object_ident, OBJECT_IDENT_SIZE);
-            rd_long(&randes_seed);
-            rd_long(&town_seed);
-            rd_short((int16u *)&last_msg);
-            for (i = 0; i < MAX_SAVE_MSG; i++)
-                rd_string(old_msg[i]);
-
-            rd_short((int16u *)&panic_save);
-            rd_short((int16u *)&total_winner);
-            rd_short((int16u *)&noscore);
-            rd_shorts(player_hp, MAX_PLAYER_LEVEL);
-
-            if ((version_min >= 2) || (version_min == 1 && patch_level >= 3))
-                for (i = 0; i < MAX_STORES; i++) {
-                    st_ptr = &store[i];
-                    rd_long((u32i *)&st_ptr->store_open);
-                    rd_short((int16u *)&st_ptr->insult_cur);
-                    rd_byte(&st_ptr->owner);
-                    rd_byte(&st_ptr->store_ctr);
-                    rd_short(&st_ptr->good_buy);
-                    rd_short(&st_ptr->bad_buy);
-                    if (st_ptr->store_ctr > STORE_INVEN_MAX)
-                        goto error;
-                    for (j = 0; j < st_ptr->store_ctr; j++) {
-                        rd_long((u32i *)&st_ptr->store_inven[j].scost);
-                        rd_item(&st_ptr->store_inven[j].sitem);
-                    }
-                }
-
-            if ((version_min >= 2) || (version_min == 1 && patch_level >= 3))
-                rd_long(&time_saved);
-
-            if (version_min >= 2)
-                rd_string(died_from);
-
-            if ((version_min >= 3) || (version_min == 2 && patch_level >= 2))
-                rd_long((u32i *)&max_score);
-            else
-                max_score = 0;
-
-            if ((version_min >= 3) || (version_min == 2 && patch_level >= 2))
-                rd_long((u32i *)&birth_date);
-            else
-                birth_date = time((long *)0);
-        }
-        if ((c = getc(fileptr)) == EOF || (l & 0x80000000L)) {
-            if ((l & 0x80000000L) == 0) {
-                if (!to_be_wizard || turn < 0)
-                    goto error;
-                prt("Attempting a resurrection!", 0, 0);
-                if (py.misc.chp < 0) {
-                    py.misc.chp = 0;
-                    py.misc.chp_frac = 0;
-                }
-                /* don't let him starve to death immediately */
-                if (py.flags.food < 0)
-                    py.flags.food = 0;
-                /* don't let him die of poison again immediately */
-                if (py.flags.poisoned > 1)
-                    py.flags.poisoned = 1;
-                dun_level = 0; /* Resurrect on the town level. */
-                character_generated = 1;
-                /* set noscore to indicate a resurrection, and don't enter
-                   wizard mode */
-                to_be_wizard = FALSE;
-                noscore |= 0x1;
-            } else {
-                /* Make sure that this message is seen, since it is a bit
-                   more interesting than the other messages.  */
-                msg_print("Restoring Memory of a departed spirit...");
-                turn = -1;
+            for (j = 0; j < st_ptr->store_ctr; j++) {
+                rd_long((u32i *)&st_ptr->store_inven[j].scost);
+                rd_item(&st_ptr->store_inven[j].sitem);
             }
+        }
+        rd_long(&time_saved);
+    }
+
+    if (version_min >= 2)
+        rd_string(died_from);
+
+    if ((version_min >= 3) || (version_min == 2 && patch_level >= 2))
+        rd_long((u32i *)&max_score);
+    else
+        max_score = 0;
+
+    if ((version_min >= 3) || (version_min == 2 && patch_level >= 2))
+        rd_long((u32i *)&birth_date);
+    else
+        birth_date = time((long *)0);
+
+skip_character:;
+
+    /* --- EOF or dead character --- */
+    c = getc(fileptr);
+    if (c == EOF || (l & 0x80000000L)) {
+        if (l & 0x80000000L) {
+            msg_print("Restoring Memory of a departed spirit...");
+            turn = -1;
             put_qio();
             goto closefiles;
         }
-        if (ungetc(c, fileptr) == EOF)
+        if (!to_be_wizard || turn < 0)
             goto error;
 
-        prt("Restoring Character...", 0, 0);
+        prt("Attempting a resurrection!", 0, 0);
+        if (py.misc.chp < 0) {
+            py.misc.chp = 0;
+            py.misc.chp_frac = 0;
+        }
+        if (py.flags.food < 0)
+            py.flags.food = 0;
+        if (py.flags.poisoned > 1)
+            py.flags.poisoned = 1;
+        dun_level = 0;
+        character_generated = 1;
+        to_be_wizard = FALSE;
+        noscore |= 0x1;
         put_qio();
+        goto closefiles;
+    }
 
-        /* only level specific info should follow, not present for dead
-           characters */
+    if (ungetc(c, fileptr) == EOF)
+        goto error;
 
-        rd_short((int16u *)&dun_level);
-        rd_short((int16u *)&char_row);
-        rd_short((int16u *)&char_col);
-        rd_short((int16u *)&mon_tot_mult);
-        rd_short((int16u *)&cur_height);
-        rd_short((int16u *)&cur_width);
-        rd_short((int16u *)&max_panel_rows);
-        rd_short((int16u *)&max_panel_cols);
+    prt("Restoring Character...", 0, 0);
+    put_qio();
 
-        /* read in the creature ptr info */
+    /* --- level-specific data --- */
+    rd_short((int16u *)&dun_level);
+    rd_short((int16u *)&char_row);
+    rd_short((int16u *)&char_col);
+    rd_short((int16u *)&mon_tot_mult);
+    rd_short((int16u *)&cur_height);
+    rd_short((int16u *)&cur_width);
+    rd_short((int16u *)&max_panel_rows);
+    rd_short((int16u *)&max_panel_cols);
+
+    /* creature ptrs */
+    rd_byte(&char_tmp);
+    while (char_tmp != 0xFF) {
+        ychar = char_tmp;
+        rd_byte(&xchar);
         rd_byte(&char_tmp);
-        while (char_tmp != 0xFF) {
-            ychar = char_tmp;
-            rd_byte(&xchar);
-            rd_byte(&char_tmp);
-            if (xchar > MAX_WIDTH || ychar > MAX_HEIGHT)
-                goto error;
-            cave[ychar][xchar].cptr = char_tmp;
-            rd_byte(&char_tmp);
-        }
-        /* read in the treasure ptr info */
+        if (xchar > MAX_WIDTH || ychar > MAX_HEIGHT)
+            goto error;
+        cave[ychar][xchar].cptr = char_tmp;
         rd_byte(&char_tmp);
-        while (char_tmp != 0xFF) {
-            ychar = char_tmp;
-            rd_byte(&xchar);
-            rd_byte(&char_tmp);
-            if (xchar > MAX_WIDTH || ychar > MAX_HEIGHT)
+    }
+
+    /* treasure ptrs */
+    rd_byte(&char_tmp);
+    while (char_tmp != 0xFF) {
+        ychar = char_tmp;
+        rd_byte(&xchar);
+        rd_byte(&char_tmp);
+        if (xchar > MAX_WIDTH || ychar > MAX_HEIGHT)
+            goto error;
+        cave[ychar][xchar].tptr = char_tmp;
+        rd_byte(&char_tmp);
+    }
+
+    /* cave RLE decode */
+    c_ptr = &cave[0][0];
+    total_count = 0;
+    while (total_count != MAX_HEIGHT * MAX_WIDTH) {
+        rd_byte(&count);
+        rd_byte(&char_tmp);
+        for (i = count; i > 0; i--, c_ptr++) {
+            c_ptr->fval = char_tmp & 0xF;
+            c_ptr->lr = (char_tmp >> 4) & 0x1;
+            c_ptr->fm = (char_tmp >> 5) & 0x1;
+            c_ptr->pl = (char_tmp >> 6) & 0x1;
+            c_ptr->tl = (char_tmp >> 7) & 0x1;
+        }
+        total_count += count;
+    }
+
+    rd_short((int16u *)&tcptr);
+    if (tcptr > MAX_TALLOC)
+        goto error;
+    for (i = MIN_TRIX; i < tcptr; i++)
+        rd_item(&t_list[i]);
+
+    rd_short((int16u *)&mfptr);
+    if (mfptr > MAX_MALLOC)
+        goto error;
+    for (i = MIN_MONIX; i < mfptr; i++)
+        rd_monster(&m_list[i]);
+
+    *generate = FALSE;
+
+    /* --- stores (old format) --- */
+    if ((version_min == 1 && patch_level < 3) || version_min == 0) {
+        for (i = 0; i < MAX_STORES; i++) {
+            st_ptr = &store[i];
+            rd_long((u32i *)&st_ptr->store_open);
+            rd_short((int16u *)&st_ptr->insult_cur);
+            rd_byte(&st_ptr->owner);
+            rd_byte(&st_ptr->store_ctr);
+            rd_short(&st_ptr->good_buy);
+            rd_short(&st_ptr->bad_buy);
+            if (st_ptr->store_ctr > STORE_INVEN_MAX)
                 goto error;
-            cave[ychar][xchar].tptr = char_tmp;
-            rd_byte(&char_tmp);
-        }
-        /* read in the rest of the cave info */
-        c_ptr = &cave[0][0];
-        total_count = 0;
-        while (total_count != MAX_HEIGHT * MAX_WIDTH) {
-            rd_byte(&count);
-            rd_byte(&char_tmp);
-            for (i = count; i > 0; i--) {
-                c_ptr->fval = char_tmp & 0xF;
-                c_ptr->lr = (char_tmp >> 4) & 0x1;
-                c_ptr->fm = (char_tmp >> 5) & 0x1;
-                c_ptr->pl = (char_tmp >> 6) & 0x1;
-                c_ptr->tl = (char_tmp >> 7) & 0x1;
-                c_ptr++;
+            for (j = 0; j < st_ptr->store_ctr; j++) {
+                rd_long((u32i *)&st_ptr->store_inven[j].scost);
+                rd_item(&st_ptr->store_inven[j].sitem);
             }
-            total_count += count;
-        }
-
-        rd_short((int16u *)&tcptr);
-        if (tcptr > MAX_TALLOC)
-            goto error;
-        for (i = MIN_TRIX; i < tcptr; i++)
-            rd_item(&t_list[i]);
-        rd_short((int16u *)&mfptr);
-        if (mfptr > MAX_MALLOC)
-            goto error;
-        for (i = MIN_MONIX; i < mfptr; i++)
-            rd_monster(&m_list[i]);
-
-        *generate = FALSE; /* We have restored a cave - no need to generate. */
-
-        if ((version_min == 1 && patch_level < 3) || (version_min == 0))
-            for (i = 0; i < MAX_STORES; i++) {
-                st_ptr = &store[i];
-                rd_long((u32i *)&st_ptr->store_open);
-                rd_short((int16u *)&st_ptr->insult_cur);
-                rd_byte(&st_ptr->owner);
-                rd_byte(&st_ptr->store_ctr);
-                rd_short(&st_ptr->good_buy);
-                rd_short(&st_ptr->bad_buy);
-                if (st_ptr->store_ctr > STORE_INVEN_MAX)
-                    goto error;
-                for (j = 0; j < st_ptr->store_ctr; j++) {
-                    rd_long((u32i *)&st_ptr->store_inven[j].scost);
-                    rd_item(&st_ptr->store_inven[j].sitem);
-                }
-            }
-
-        /* read the time that the file was saved */
-        if (version_min == 0 && patch_level < 16)
-            time_saved = 0; /* no time in file, clear to zero */
-        else if (version_min == 1 && patch_level < 3)
-            rd_long(&time_saved);
-
-        if (ferror(fileptr))
-            goto error;
-
-        if (turn < 0)
-        error:
-            ok = FALSE; /* Assume bad data. */
-        else {
-            /* don't overwrite the killed by string if character is dead */
-            if (py.misc.chp >= 0)
-                (void)strcpy(died_from, "(alive and well)");
-            character_generated = 1;
-        }
-
-    closefiles:
-
-        DEBUG(fclose(logfile));
-
-        if (fileptr != NULL) {
-            if (fclose(fileptr) < 0)
-                ok = FALSE;
-        }
-        if (fd >= 0)
-            (void)close(fd);
-
-        if (!ok)
-            msg_print("Error during reading of file.");
-        else {
-            /* let the user overwrite the old savefile when save/quit */
-            from_savefile = 1;
-
-            signals();
-
-            if (panic_save == 1) {
-                (void)sprintf(temp, "This game is from a panic save.  \
-Score will not be added to scoreboard.");
-                msg_print(temp);
-            } else if ((!noscore & 0x04) && duplicate_character()) {
-                (void)sprintf(temp, "This character is already on the \
-scoreboard; it will not be scored again.");
-                msg_print(temp);
-                noscore |= 0x4;
-            }
-
-            if (turn >= 0) { /* Only if a full restoration. */
-                weapon_heavy = FALSE;
-                pack_heavy = 0;
-                check_strength();
-
-                /* rotate store inventory, depending on how old the save file */
-                /* is foreach day old (rounded up), call store_maint */
-                /* calculate age in seconds */
-                start_time = time((long *)0);
-                /* check for reasonable values of time here ... */
-                if (start_time < time_saved)
-                    age = 0;
-                else
-                    age = start_time - time_saved;
-
-                age = (age + 43200L) / 86400L; /* age in days */
-                if (age > 10)
-                    age = 10; /* in case savefile is very old */
-                for (i = 0; i < age; i++)
-                    store_maint();
-            }
-
-            if (noscore)
-                msg_print(
-                    "This save file cannot be used to get on the score board.");
-
-            if (version_maj != CUR_VERSION_MAJ ||
-                version_min != CUR_VERSION_MIN) {
-                (void)sprintf(
-                    temp, "Save file version %d.%d %s on game version %d.%d.",
-                    version_maj, version_min,
-                    version_min <= CUR_VERSION_MIN ? "accepted" : "risky",
-                    CUR_VERSION_MAJ, CUR_VERSION_MIN);
-                msg_print(temp);
-            }
-
-            if (turn >= 0)
-                return TRUE;
-            else
-                return FALSE; /* Only restored options and monster memory. */
         }
     }
+
+    if (version_min == 0 && patch_level < 16)
+        time_saved = 0;
+    else if (version_min == 1 && patch_level < 3)
+        rd_long(&time_saved);
+
+    if (ferror(fileptr))
+        goto error;
+    if (turn >= 0)
+        goto restore_ok;
+
+error:
+    ok = FALSE;
+    goto closefiles;
+
+restore_ok:
+    if (py.misc.chp >= 0)
+        (void)strcpy(died_from, "(alive and well)");
+    character_generated = 1;
+
+closefiles:
+    DEBUG(fclose(logfile));
+    if (fileptr != NULL && fclose(fileptr) < 0)
+        ok = FALSE;
+    if (fd >= 0)
+        close(fd);
+    if (!ok) {
+        msg_print("Error during reading of file.");
+        goto abort;
+    }
+
+    from_savefile = 1;
+    signals();
+
+    if (panic_save == 1) {
+        (void)sprintf(temp, "This game is from a panic save.  Score will not "
+                            "be added to scoreboard.");
+        msg_print(temp);
+    } else if (!(noscore & 0x04) && duplicate_character()) {
+        (void)sprintf(temp, "This character is already on the scoreboard; it "
+                            "will not be scored again.");
+        msg_print(temp);
+        noscore |= 0x4;
+    }
+
+    if (turn < 0)
+        return FALSE; /* options + monster memory only */
+
+    /* full restoration */
+    weapon_heavy = FALSE;
+    pack_heavy = 0;
+    check_strength();
+
+    start_time = time((long *)0);
+    age = (start_time < time_saved) ? 0 : start_time - time_saved;
+    age = (age + 43200L) / 86400L;
+    if (age > 10)
+        age = 10;
+    for (i = 0; i < age; i++)
+        store_maint();
+
+    if (noscore)
+        msg_print("This save file cannot be used to get on the score board.");
+
+    if (version_maj != CUR_VERSION_MAJ || version_min != CUR_VERSION_MIN) {
+        (void)sprintf(temp, "Save file version %d.%d %s on game version %d.%d.",
+                      version_maj, version_min,
+                      version_min <= CUR_VERSION_MIN ? "accepted" : "risky",
+                      CUR_VERSION_MAJ, CUR_VERSION_MIN);
+        msg_print(temp);
+    }
+
+    return TRUE;
+
+abort:
     turn = -1;
     prt("Please try again without that savefile.", 1, 0);
     signals();
     exit_game();
-    return FALSE; /* not reached, unless on mac */
+    return FALSE;
 }
 
 static void wr_byte(c) int8u c;
