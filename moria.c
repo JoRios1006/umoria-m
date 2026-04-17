@@ -2634,7 +2634,7 @@ int32 rnd();
 /* save.c */
 int save_char();
 int _save_char();
-int get_char();
+bool restore_game();
 void set_fileptr();
 void wr_highscore();
 void rd_highscore();
@@ -29086,7 +29086,7 @@ char *fnam;
 }
 
 /* Certain checks are ommitted for the wizard. -CJS- */
-int get_char(int *generate) {
+bool restore_game(int *generate) {
     int i, j;
     int fd, c, ok, total_count;
     u32i l, age, time_saved;
@@ -29110,7 +29110,7 @@ int get_char(int *generate) {
 
     if (turn >= 0) {
         msg_print("IMPOSSIBLE! Attempt to restore while still alive!");
-        goto abort;
+        goto ABORT_READING;
     }
 
     /* try open without chmod first, then with */
@@ -29118,7 +29118,7 @@ int get_char(int *generate) {
     if (fd < 0 &&
         (chmod(savefile, 0400) < 0 || (fd = open(savefile, O_RDONLY, 0)) < 0)) {
         msg_print("Can't open file for reading.");
-        goto abort;
+        goto ABORT_READING;
     }
 
     turn = -1;
@@ -29506,7 +29506,7 @@ closefiles:
         close(fd);
     if (!ok) {
         msg_print("Error during reading of file.");
-        goto abort;
+        goto ABORT_READING;
     }
 
     from_savefile = 1;
@@ -29552,7 +29552,7 @@ closefiles:
 
     return TRUE;
 
-abort:
+ABORT_READING:
     turn = -1;
     prt("Please try again without that savefile.", 1, 0);
     signals();
@@ -42835,7 +42835,7 @@ char *argv[];
 #ifdef MAC
     if ((new_game == FALSE) && get_char(&generate))
 #else
-    if ((new_game == FALSE) && !access(savefile, 0) && get_char(&generate))
+    if ((new_game == FALSE) && !access(savefile, 0) && restore_game(&generate))
 #endif
         result = TRUE;
 
