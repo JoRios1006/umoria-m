@@ -2745,7 +2745,7 @@ int remove_curse();
 int restore_level();
 
 /* staffs.c */
-void use();
+void use_staff();
 
 /* store1.c */
 int32 item_value();
@@ -6757,22 +6757,13 @@ int mean, stand;
 
 /* Returns position of first set bit			-RAK-	*/
 /*     and clears that bit */
-int bit_pos(test)
-u32i *test;
-{
-    int i;
-    u32i mask = 0x1;
-
-    for (i = 0; i < sizeof(*test) * 8; i++) {
-        if (*test & mask) {
-            *test &= ~mask;
-            return (i);
-        }
-        mask <<= 1;
-    }
-
-    /* no one bits found */
-    return (-1);
+/* Seem like the norm here is to comment stuff
+   using builtin, no nee to check zero
+   -JO-    */
+int bit_pos(u32i *test) {
+    int i = __builtin_ctz(*test);
+    *test &= *test - 1;
+    return i;
 }
 
 /* Checks a co-ordinate for in bounds status		-RAK-	*/
@@ -16448,7 +16439,7 @@ static void do_command(com_val) char com_val;
         inven_command('t');
         break;
     case 'Z': /* (Z)ap a staff	(u)se a staff */
-        use();
+        use_staff();
         break;
     case 'v': /* (v)ersion of game */
         helpfile(MORIA_VER);
@@ -28307,160 +28298,179 @@ void aim() {
 #else
 #include <strings.h>
 #endif
+typedef int (*staff_fn)(void);
 
-/* Use a staff.					-RAK-	*/
-void use() {
-    u32i i;
-    int j, k, item_val, chance, y, x;
-    int ident;
-    struct misc *m_ptr;
-    inven_type *inventory_p;
-
-    free_turn_flag = TRUE;
-    if (inventory_counter == 0)
-        msg_print("But you are not carrying anything.");
-    else if (!find_range(TV_STAFF, TV_NEVER, &j, &k))
-        msg_print("You are not carrying any staffs.");
-    else if (get_item(&item_val, "Use which staff?", j, k, CNIL, CNIL)) {
-        inventory_p = &inventory[item_val];
-        free_turn_flag = FALSE;
-        m_ptr = &py.misc;
-        chance =
-            m_ptr->save + get_mana_multiplier(A_INT) - (int)inventory_p->level -
-            5 + (class_level_adj[m_ptr->pclass][CLA_DEVICE] * m_ptr->level / 3);
-        if (py.flags.confused > 0)
-            chance = chance / 2;
-        if ((chance < USE_DEVICE) && (randint(USE_DEVICE - chance + 1) == 1))
-            chance = USE_DEVICE; /* Give everyone a slight chance */
-        if (chance <= 0)
-            chance = 1;
-        if (randint(chance) < USE_DEVICE)
-            msg_print("You failed to use the staff properly.");
-        else if (inventory_p->p1 > 0) {
-            i = inventory_p->flags;
-            ident = FALSE;
-            (inventory_p->p1)--;
-            while (i != 0) {
-                j = bit_pos(&i) + 1;
-                /* Staffs.				*/
-                switch (j) {
-                case 1:
-                    ident = light_area(char_row, char_col);
-                    break;
-                case 2:
-                    ident = detect_sdoor();
-                    break;
-                case 3:
-                    ident = detect_trap();
-                    break;
-                case 4:
-                    ident = detect_treasure();
-                    break;
-                case 5:
-                    ident = detect_object();
-                    break;
-                case 6:
-                    teleport(100);
-                    ident = TRUE;
-                    break;
-                case 7:
-                    ident = TRUE;
-                    earthquake();
-                    break;
-                case 8:
-                    ident = FALSE;
-                    for (k = 0; k < randint(4); k++) {
-                        y = char_row;
-                        x = char_col;
-                        ident |= summon_monster(&y, &x, FALSE);
-                    }
-                    break;
-                case 10:
-                    ident = TRUE;
-                    destroy_area(char_row, char_col);
-                    break;
-                case 11:
-                    ident = TRUE;
-                    starlite(char_row, char_col);
-                    break;
-                case 12:
-                    ident = speed_monsters(1);
-                    break;
-                case 13:
-                    ident = speed_monsters(-1);
-                    break;
-                case 14:
-                    ident = sleep_monsters2();
-                    break;
-                case 15:
-                    ident = hp_player(randint(8));
-                    break;
-                case 16:
-                    ident = detect_invisible();
-                    break;
-                case 17:
-                    if (py.flags.fast == 0)
-                        ident = TRUE;
-                    py.flags.fast += randint(30) + 15;
-                    break;
-                case 18:
-                    if (py.flags.slow == 0)
-                        ident = TRUE;
-                    py.flags.slow += randint(30) + 15;
-                    break;
-                case 19:
-                    ident = mass_poly();
-                    break;
-                case 20:
-                    if (remove_curse()) {
-                        if (py.flags.blind < 1)
-                            msg_print("The staff glows blue for a moment..");
-                        ident = TRUE;
-                    }
-                    break;
-                case 21:
-                    ident = detect_evil();
-                    break;
-                case 22:
-                    if ((cure_blindness()) || (cure_poison()) ||
-                        (cure_confusion()))
-                        ident = TRUE;
-                    break;
-                case 23:
-                    ident = dispel_creature(CD_EVIL, 60);
-                    break;
-                case 25:
-                    ident = unlight_area(char_row, char_col);
-                    break;
-                case 32:
-                    /* store bought flag */
-                    break;
-                default:
-                    msg_print("Internal error in staffs()");
-                    break;
-                }
-                /* End of staff actions.		*/
-            }
-            if (ident) {
-                if (!known1_p(inventory_p)) {
-                    m_ptr = &py.misc;
-                    /* round half-way case up */
-                    m_ptr->exp += (inventory_p->level + (m_ptr->level >> 1)) /
-                                  m_ptr->level;
-                    prt_experience();
-
-                    identify(&item_val);
-                    inventory_p = &inventory[item_val];
-                }
-            } else if (!known1_p(inventory_p))
-                sample(inventory_p);
-            desc_charges(item_val);
-        } else {
-            msg_print("The staff has no charges left.");
-            if (!known2_p(inventory_p))
-                add_inscribe(inventory_p, ID_EMPTY);
-        }
+static int staff_summon_monsters(void) {
+    int ident = FALSE;
+    int y, x;
+    for (int k = 0; k < randint(4); k++) {
+        y = char_row;
+        x = char_col;
+        ident |= summon_monster(&y, &x, FALSE);
     }
+    return ident;
+}
+
+static int staff_haste(void) {
+    int ident = (py.flags.fast == 0);
+    py.flags.fast += randint(30) + 15;
+    return ident;
+}
+
+static int staff_slow(void) {
+    int ident = (py.flags.slow == 0);
+    py.flags.slow += randint(30) + 15;
+    return ident;
+}
+
+static int staff_remove_curse(void) {
+    if (!remove_curse())
+        return FALSE;
+    if (py.flags.blind < 1)
+        msg_print("The staff glows blue for a moment..");
+    return TRUE;
+}
+
+static int staff_cure(void) {
+    return cure_blindness() | cure_poison() | cure_confusion();
+}
+
+static int staff_light(void) { return light_area(char_row, char_col); }
+static int staff_detect_door(void) { return detect_sdoor(); }
+static int staff_detect_trap(void) { return detect_trap(); }
+static int staff_detect_treasure(void) { return detect_treasure(); }
+static int staff_detect_object(void) { return detect_object(); }
+static int staff_teleport(void) {
+    teleport(100);
+    return TRUE;
+}
+static int staff_earthquake(void) {
+    earthquake();
+    return TRUE;
+}
+static int staff_destroy(void) {
+    destroy_area(char_row, char_col);
+    return TRUE;
+}
+static int staff_starlite(void) {
+    starlite(char_row, char_col);
+    return TRUE;
+}
+static int staff_speed_monsters(void) { return speed_monsters(1); }
+static int staff_slow_monsters(void) { return speed_monsters(-1); }
+static int staff_sleep_monsters(void) { return sleep_monsters2(); }
+static int staff_heal(void) { return hp_player(randint(8)); }
+static int staff_detect_invis(void) { return detect_invisible(); }
+static int staff_poly(void) { return mass_poly(); }
+static int staff_detect_evil(void) { return detect_evil(); }
+static int staff_dispel_evil(void) { return dispel_creature(CD_EVIL, 60); }
+static int staff_unlight(void) { return unlight_area(char_row, char_col); }
+static int staff_noop(void) { return FALSE; /* store bought flag */ }
+
+/* index = bit position (1-based), NULL = undefined/internal error */
+static const staff_fn staff_table[33] = {
+    [0] = NULL,
+    [1] = staff_light,
+    [2] = staff_detect_door,
+    [3] = staff_detect_trap,
+    [4] = staff_detect_treasure,
+    [5] = staff_detect_object,
+    [6] = staff_teleport,
+    [7] = staff_earthquake,
+    [8] = staff_summon_monsters,
+    [9] = NULL,
+    [10] = staff_destroy,
+    [11] = staff_starlite,
+    [12] = staff_speed_monsters,
+    [13] = staff_slow_monsters,
+    [14] = staff_sleep_monsters,
+    [15] = staff_heal,
+    [16] = staff_detect_invis,
+    [17] = staff_haste,
+    [18] = staff_slow,
+    [19] = staff_poly,
+    [20] = staff_remove_curse,
+    [21] = staff_detect_evil,
+    [22] = staff_cure,
+    [23] = staff_dispel_evil,
+    [24] = NULL,
+    [25] = staff_unlight,
+    [26] = NULL,
+    [27] = NULL,
+    [28] = NULL,
+    [29] = NULL,
+    [30] = NULL,
+    [31] = NULL,
+    [32] = staff_noop,
+};
+/* Use a staff.					-RAK-	*/
+void use_staff() {
+    int j, k, item_val;
+    free_turn_flag = TRUE;
+
+    if (inventory_counter == 0) {
+        msg_print("But you are not carrying anything.");
+        return;
+    }
+    if (!find_range(TV_STAFF, TV_NEVER, &j, &k)) {
+        msg_print("You are not carrying any staffs.");
+        return;
+    }
+    if (!get_item(&item_val, "Use which staff?", j, k, CNIL, CNIL))
+        return;
+
+    free_turn_flag = FALSE;
+
+    inven_type *inventory_p = &inventory[item_val];
+    struct misc *m_ptr = &py.misc;
+
+    int chance =
+        m_ptr->save + get_mana_multiplier(A_INT) - (int)inventory_p->level - 5 +
+        (class_level_adj[m_ptr->pclass][CLA_DEVICE] * m_ptr->level / 3);
+
+    if (py.flags.confused > 0)
+        chance /= 2;
+    if (chance < USE_DEVICE && randint(USE_DEVICE - chance + 1) == 1)
+        chance = USE_DEVICE;
+    if (chance <= 0)
+        chance = 1;
+
+    if (randint(chance) < USE_DEVICE) {
+        msg_print("You failed to use the staff properly.");
+        return;
+    }
+
+    if (inventory_p->p1 <= 0) {
+        msg_print("The staff has no charges left.");
+        if (!known2_p(inventory_p))
+            add_inscribe(inventory_p, ID_EMPTY);
+        return;
+    }
+
+    (inventory_p->p1)--;
+
+    int ident = FALSE;
+    u32i flags = inventory_p->flags;
+    while (flags) {
+        int bit = bit_pos(&flags) + 1;
+        if (bit > 32 || !staff_table[bit]) {
+            msg_print("Internal error in staffs()");
+            continue;
+        }
+        ident |= staff_table[bit]();
+    }
+
+    if (ident && !known1_p(inventory_p)) {
+        /* round half-way case up */
+        m_ptr->exp += (inventory_p->level + (m_ptr->level >> 1)) / m_ptr->level;
+        prt_experience();
+        identify(&item_val);
+        inventory_p = &inventory[item_val];
+    } else if (!ident && !known1_p(inventory_p)) {
+        sample(inventory_p);
+    }
+
+    desc_charges(item_val);
 }
 
 /* ================================================================
