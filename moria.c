@@ -14912,7 +14912,7 @@ static void jamdoor(void);
 static void refill_lamp(void);
 #else
 static char original_commands();
-static void do_command();
+static void do_command(char);
 static int valid_countcommand();
 static void regenhp();
 static void regenmana();
@@ -16042,8 +16042,7 @@ char com_val;
     return com_val;
 }
 
-static void do_command(com_val) char com_val;
-{
+static void do_command(char com_val){
     int dir_val, do_pickup;
     int y, x, i, j;
     vtype out_val, tmp_str;
@@ -16155,13 +16154,8 @@ static void do_command(com_val) char com_val;
         } else {
             (void)strcpy(died_from, "(saved)");
             msg_print("Saving game...");
-#ifdef MAC
-            if (save_char(TRUE))
-                exit_game();
-#else
             if (save_char())
                 exit_game();
-#endif
             (void)strcpy(died_from, "(alive and well)");
         }
         free_turn_flag = TRUE;
@@ -16178,11 +16172,7 @@ static void do_command(com_val) char com_val;
         break;
     case '!': /* (!) escape to the shell */
     case '$':
-#ifdef SECURE
-        msg_print("Sorry, inferior shells are not allowed from Moria.");
-#else
         shell_out();
-#endif
         free_turn_flag = TRUE;
         break;
     case ESCAPE: /* (ESC)   do nothing. */
@@ -28407,7 +28397,6 @@ static const staff_fn staff_table[33] = {
 void use_staff() {
     int j, k, item_val;
     free_turn_flag = TRUE;
-
     if (inventory_counter == 0) {
         msg_print("But you are not carrying anything.");
         return;
@@ -28418,59 +28407,49 @@ void use_staff() {
     }
     if (!get_item(&item_val, "Use which staff?", j, k, CNIL, CNIL))
         return;
-
     free_turn_flag = FALSE;
-
     inven_type *inventory_p = &inventory[item_val];
     struct misc *m_ptr = &py.misc;
-
     int chance =
         m_ptr->save + get_mana_multiplier(A_INT) - (int)inventory_p->level - 5 +
         (class_level_adj[m_ptr->pclass][CLA_DEVICE] * m_ptr->level / 3);
-
     if (py.flags.confused > 0)
         chance /= 2;
     if (chance < USE_DEVICE && randint(USE_DEVICE - chance + 1) == 1)
         chance = USE_DEVICE;
     if (chance <= 0)
         chance = 1;
-
     if (randint(chance) < USE_DEVICE) {
         msg_print("You failed to use the staff properly.");
         return;
     }
-
     if (inventory_p->p1 <= 0) {
         msg_print("The staff has no charges left.");
         if (!known2_p(inventory_p))
             add_inscribe(inventory_p, ID_EMPTY);
         return;
     }
-
     (inventory_p->p1)--;
-
     int ident = FALSE;
     u32i flags = inventory_p->flags;
-    while (flags) {
-        int bit = bit_pos(&flags) + 1;
-        if (bit > 32 || !staff_table[bit]) {
-            msg_print("Internal error in staffs()");
-            continue;
-        }
-        ident |= staff_table[bit]();
-    }
-
-    if (ident && !known1_p(inventory_p)) {
-        /* round half-way case up */
+UNPACK_STAFF_BITS:;
+	int bit = bit_pos(&flags) + 1;
+	if (bit > 32 || !staff_table[bit]) {
+		msg_print("Internal error in staffs()");
+		goto EXIT_STAFF_BITS_UNPACKING;
+	}
+	ident |= staff_table[bit]();
+	if(flags) goto UNPACK_STAFF_BITS;
+EXIT_STAFF_BITS_UNPACKING:;
+	desc_charges(item_val);
+    if (known1_p(inventory_p)) return;
+    if (ident) {
         m_ptr->exp += (inventory_p->level + (m_ptr->level >> 1)) / m_ptr->level;
         prt_experience();
         identify(&item_val);
-        inventory_p = &inventory[item_val];
-    } else if (!ident && !known1_p(inventory_p)) {
+    } else {
         sample(inventory_p);
     }
-
-    desc_charges(item_val);
 }
 
 /* ================================================================
