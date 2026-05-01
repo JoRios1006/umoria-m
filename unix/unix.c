@@ -45,8 +45,6 @@
 #if 0
 #endif
 #include <fcntl.h>
-#else
-#endif
 
 /* This must be included after fcntl.h, which has a prototype for `open'
    on some systems.  Otherwise, the `open' prototype conflicts with the
@@ -66,7 +64,6 @@ struct passwd *getpwnam();
    reset for different systems. */
 #ifdef lint
 #else
-#endif
 #endif
 
 /* Provides for a timeout on input. Does a non-blocking read, consuming the
@@ -115,11 +112,6 @@ int microsec;
 #if 0
 #endif
 
-#else
-#else  /* other BSD versions */
-#endif
-#endif
-#endif
 
 /* Find a default user name from the system. */
 void user_name(buf)
@@ -213,5 +205,6 @@ int flags, mode;
   errno = ENOENT;
   return -1;
 }
+
 
 

@@ -1,3 +1,5 @@
+#ifndef MORIA_TYPES_H
+#define MORIA_TYPES_H
 /* source/types.h: global type declarations
 
    Copyright (C) 1989-2008 James E. Wilson, Robert A. Koeneke, 
@@ -382,3 +384,5 @@ typedef struct high_scores
 
 
 
+
+#endif /* MORIA_TYPES_H */

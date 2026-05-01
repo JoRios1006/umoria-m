@@ -1,3 +1,5 @@
+#ifndef MORIA_CONFIG_H
+#define MORIA_CONFIG_H
 /* source/config.h: configuration definitions
 
    Copyright (C) 1989-2008 James E. Wilson, Robert A. Koeneke,
@@ -41,7 +43,7 @@
 #define LIBDIR "/usr/local/share/moria"
 #endif
 
-#define MORIA_TOP     LIBDIR "/scores.dat"
+#define MORIA_TOP     LIBDIR "/scores"
 #define MORIA_WELCOME LIBDIR "/welcome.hlp"
 #define MORIA_HELP LIBDIR "/moria.hlp"
 #define MORIA_ORIG LIBDIR "/origmoria.hlp"
@@ -53,3 +55,5 @@
 /* Use SYS V (USG) style string/terminal functions */
 #define index  strchr
 #define rindex strrchr
+
+#endif /* MORIA_CONFIG_H */

@@ -24,7 +24,6 @@
 #include "externs.h"
 
 #include <memory.h>
-#endif
 
 
 
@@ -1445,5 +1444,6 @@ void generate_cave()
       cave_gen();
     }
 }
+
 
 

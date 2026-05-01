@@ -1,7 +1,7 @@
 # Umoria 5.6 - Classic Roguelike Game
 
 ## Overview
-Umoria (Universal Moria) is a classic terminal-based roguelike dungeon exploration game based on the original Moria (1983). Written in C, using ncurses for terminal rendering.
+Umoria (Universal Moria) is a classic terminal-based roguelike dungeon exploration game based on the original Moria (1983). Written in C (gnu89), using ncurses for terminal rendering. The codebase is Linux-only: all dead platform compatibility code (Mac, MSDOS, VMS, Atari, Amiga, etc.) has been stripped.
 
 ## Tech Stack
 - **Language**: C (gnu89 standard)
@@ -9,7 +9,7 @@ Umoria (Universal Moria) is a classic terminal-based roguelike dungeon explorati
 - **Build System**: GNU Make (multi-file) or direct gcc (monolith)
 
 ## Project Structure
-- `moria.c` - **Monolithic single-file build** (36,740 lines, all sources concatenated)
+- `moria.c` - **Monolithic single-file build** (~30,000 lines, all sources concatenated)
 - `source/` - Core game logic (all .c and .h files)
 - `unix/` - Unix/Linux platform driver and build directory (symlinks to source/)
 - `files/` - Game data files (help, news, hours, scores, COPYING)
@@ -21,8 +21,11 @@ Umoria (Universal Moria) is a classic terminal-based roguelike dungeon explorati
 
 ### Monolithic single-file build (any Linux machine, no build system needed)
 ```bash
-gcc moria.c -lncurses -DLIBDIR=\"$HOME/.local/share/moria\" -std=gnu89 \
-    -Wno-implicit-function-declaration -Wno-int-conversion -o moria
+gcc -O2 -std=gnu89 \
+    -DLIBDIR='"/home/runner/workspace/.local/share/moria"' \
+    -I unix -I source \
+    -Wno-implicit-function-declaration -Wno-int-conversion \
+    moria.c -o moria -lncurses -ltinfo
 ```
 Then copy the `files/` directory to `$HOME/.local/share/moria/`.
 
@@ -38,28 +41,46 @@ make install
 - Binary installed to: `/home/runner/.local/bin/moria`
 
 ## Configuration
-- **Data paths**: hardcoded in `source/config.h` (Generic UNIX section, lines ~244-256)
+- **Data paths**: `source/config.h` (MORIA_TOP, MORIA_HELP, etc.) — all override-able via `-DLIBDIR`
 - **Paths point to**: `/home/runner/workspace/.local/share/moria/`
 
 ## Workflow
 - **Name**: Start application
-- **Command**: `/home/runner/.local/bin/moria`
-- **Type**: console (TUI application)
+- **Command**: `TERM=xterm-256color /home/runner/.local/bin/moria`
+- **Type**: console TUI (ncurses roguelike — no HTTP port)
 
-## Fixes Applied
+## Key Fixes Applied
 
-### Source fixes (source files — required before regenerating moria.c)
-1. **Buffer overflow**: `days[7][29]` → `days[7][82]` in `source/tables.c` and `source/externs.h` — fgets includes newline, old buffer was too small.
-2. **Hardcoded developer paths**: `source/config.h` — added `#ifndef LIBDIR` guards so the `LIBDIR` compile-time flag wins.
-3. **`int bool` conflict**: `source/misc3.c` function `mmove()` — renamed local variable `bool` → `moria_flag` (ncurses defines `bool` as a type).
-4. **`getuid`/`getgid` redeclarations**: `source/death.c`, `source/main.c` — wrapped with `#ifndef __linux__` since `<unistd.h>` already provides these on Linux.
-5. **Static `flock` hack conflict**: `source/death.c` — added `&& !defined(__linux__)` to the surrounding `#if` condition; Linux has `flock()` in `<sys/file.h>`.
+### Dead-code cleanup (orphan #endif fixer)
+- Removed all platform-specific branches (MAC, MSDOS, VMS, ATARI_ST, AMIGA, etc.)
+- Fixed cascading strip bugs in: death.c, dungeon.c, files.c, generate.c, io.c, main.c, misc1.c, misc3.c, save.c, signals.c, unix.c
 
-### Build fixes (unix/Makefile)
-6. `CPPFLAGS ?=` → `override CPPFLAGS +=` so `-DLIBDIR` always injects.
-7. Added `-ltinfo` to `LDLIBS`.
-8. Rewrote Makefile with proper tab characters (edit tool had corrupted them).
+### Restored stripped data arrays
+- `c_list[]` in monsters.c (monster templates)
+- `object_list[]` in treasure.c (978 items)
+- `colors/mushrooms/woods/metals/rocks/amulets/syllables[]` in tables.c
+- `owners[]` in tables.c (18 store owners)
+- `player_title[]`, `race[]`, `background[]`, `magic_spell[]` in player.c
 
-### Monolith generation
-- Generator script: `/tmp/gen_monolith.sh` — concatenates all source files with system headers placed before project headers (avoids `#define open topen` and `#define fopen tfopen` conflicts from `externs.h`).
-- `<signal.h>` placed before `externs.h` so the `suspend()`/`SIGTSTP` declaration inside `externs.h` resolves correctly.
+### save.c
+- Restored `#define DEBUG(x)` (was inside stripped `#if 0` block)
+- Restored `else if ((fd = open(savefile, O_RDONLY, 0)) < 0 ...)` condition before error print
+- Added all static forward declarations: wr_byte, wr_short, wr_long, wr_bytes, wr_string, wr_shorts, wr_item, wr_monster, rd_byte, rd_short, rd_long, rd_bytes, rd_string, rd_shorts, rd_item, rd_monster
+
+### io.c
+- Restored `if (initscr() == NULL)` condition (was stripped, causing unconditional crash)
+- Restored `#define use_value2` (empty no-op macro for non-lint builds)
+- Fixed shell_out() for Linux (fork/exec/wait pattern with tcgetattr/tcsetattr)
+
+### files.c
+- Restored `init_scorefile()` body: try `fopen(MORIA_TOP, "r+")`, fall back to `"w+"` for creation
+- config.h: changed MORIA_TOP from `"/scores.dat"` to `"/scores"` to match Linux convention
+
+### externs.h (monolith compatibility)
+- Added `#ifndef MORIA_EXTERNS_H` include guard
+- Removed `#define open topen` and `#define fopen tfopen` macros (break monolith due to ordering)
+- Fixed `extern char *copyright[5]` → `[17]` to match variable.c definition
+- Fixed `int set_large(inven_type *)` → `int set_large(treasure_type *)` to match sets.c definition
+
+### All moria headers
+- Added include guards to config.h, constant.h, types.h, externs.h, local_paths.h

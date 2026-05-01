@@ -1,3 +1,5 @@
+#ifndef MORIA_CONSTANT_H
+#define MORIA_CONSTANT_H
 /* source/constant.h: global constants used by Moria
 
    Copyright (C) 1989-2008 James E. Wilson, Robert A. Koeneke, 
@@ -250,6 +252,7 @@
 /* This used to be NULL, but that was technically incorrect.  CNIL is used
    instead of null to help avoid lint errors.  */
 #ifndef CNIL
+#define CNIL ((char *)0)
 #endif
 
 /* Fval definitions: these describe the various types of dungeon floors and
@@ -616,3 +619,5 @@
 #define SCOREFILE_SIZE  1000
 
 
+
+#endif /* MORIA_CONSTANT_H */

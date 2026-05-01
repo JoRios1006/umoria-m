@@ -29,10 +29,17 @@
 
 #include <string.h>
 
-#if defined(LINT_ARGS)
-#else
-#endif
-
+static char original_commands(char com_val);
+static void do_command(char com_val);
+static int  valid_countcommand(char c);
+static void regenhp(int percent);
+static void regenmana(int percent);
+static int  enchanted(inven_type *t_ptr);
+static void examine_book(void);
+static void go_up(void);
+static void go_down(void);
+static void jamdoor(void);
+static void refill_lamp(void);
 
 /* Moria game module                                    -RAK-   */
 /* The code in this section has gone through many revisions, and */
@@ -88,7 +95,6 @@ void dungeon()
   /* Print the depth                       */
   prt_depth();
 #if 0
-#endif
 #endif
 
   /* Loop until dead,  or new level             */
@@ -1964,5 +1970,6 @@ static void refill_lamp()
       inven_destroy(i);
     }
 }
+
 
 

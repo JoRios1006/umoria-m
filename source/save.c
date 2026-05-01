@@ -19,9 +19,7 @@
    along with Umoria.  If not, see <http://www.gnu.org/licenses/>. */
 
 /* For debugging the savefile code on systems with broken compilers.  */
-#if 0
-#else
-#endif
+#define DEBUG(x)
 
 #include <stdio.h>
 
@@ -42,10 +40,25 @@
 
 DEBUG(static FILE *logfile);
 
-#if defined(LINT_ARGS)
-#else
-#endif
 
+  static int sv_write(void);
+  static void wr_byte(int8u c);
+  static void wr_short(int16u s);
+  static void wr_long(int32u l);
+  static void wr_bytes(int8u *c, int count);
+  static void wr_string(char *str);
+  static void wr_shorts(int16u *s, int count);
+  static void wr_item(inven_type *item);
+  static void wr_monster(monster_type *mon);
+  static void rd_byte(int8u *c);
+  static void rd_short(int16u *s);
+  static void rd_long(int32u *l);
+  static void rd_bytes(int8u *c, int count);
+  static void rd_string(char *str);
+  static void rd_shorts(int16u *s, int count);
+  static void rd_item(inven_type *item);
+  static void rd_monster(monster_type *mon);
+  
 long time();
 
 /* these are used for the save file, to avoid having to pass them to every
@@ -350,8 +363,6 @@ static int sv_write()
   wr_byte((int8u)count);
   wr_byte(prev_char);
 
-#endif
-#endif
   wr_short((int16u)tcptr);
   for (i = MIN_TRIX; i < tcptr; i++)
     wr_item(&t_list[i]);
@@ -419,7 +430,6 @@ char *fnam;
      the old save file. */
   fd = -1;
   fileptr = NULL;		/* Do not assume it has been init'ed */
-#endif
   fd = open(fnam, O_RDWR|O_CREAT|O_EXCL, 0600);
   if (fd < 0 && access(fnam, 0) >= 0 &&
       (from_savefile ||
@@ -524,8 +534,11 @@ int *generate;
   /* Allow restoring a file belonging to someone else, if we can delete it. */
   /* Hence first try to read without doing a chmod. */
 
-    msg_print("Can't open file for reading.");
-  else
+  else if ((fd = open(savefile, O_RDONLY, 0)) < 0
+     && (chmod(savefile, 0400) < 0
+         || (fd = open(savefile, O_RDONLY, 0)) < 0))
+      msg_print("Can't open file for reading.");
+    else
     {
       turn = -1;
       ok = TRUE;
@@ -919,8 +932,6 @@ int *generate;
       for (i = MIN_MONIX; i < mfptr; i++)
 	rd_monster(&m_list[i]);
 
-#endif
-#endif
 
       *generate = FALSE;  /* We have restored a cave - no need to generate. */
 
@@ -1387,5 +1398,6 @@ high_scores *score;
   rd_bytes((int8u *)score->died_from, 25);
   DEBUG(fclose (logfile));
 }
+
 
 

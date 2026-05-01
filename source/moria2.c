@@ -25,9 +25,8 @@
 #include "types.h"
 #include "externs.h"
 
-#if defined(LINT_ARGS)
-#else
-#endif
+static int see_wall(int dir, int y, int x);
+static int see_nothing(int dir, int y, int x);
 
 
 /* Change a trap from invisible to visible		-RAK-	*/
@@ -347,8 +346,9 @@ int dir, y, x;
 {
   char c;
 
-  if (!mmove(dir, &y, &x))	/* check to see if movement there possible */
+  if (!mmove(dir, &y, &x))
     return TRUE;
+  else if ((c = loc_symbol(y, x)) == '#' || c == '%')
     return TRUE;
   else
     return FALSE;

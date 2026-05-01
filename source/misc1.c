@@ -28,7 +28,6 @@
 #ifdef Pyramid
 #else
 #endif
-#endif
 
 long time();
 struct tm *localtime();
@@ -84,8 +83,6 @@ void reset_seed()
 int check_time()
 {
 #ifdef MORIA_HOU
-#else
-#endif
 #else
 #endif
 }
@@ -1060,5 +1057,6 @@ int base, max_std, level;
   else
     return(x);
 }
+
 
 

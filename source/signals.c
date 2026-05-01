@@ -59,8 +59,6 @@ static int error_sig = -1;
 static int signal_count = 0;
 
 /*ARGSUSED*/
-#else
-#endif
 static int signal_handler(sig)
 int sig;
 {
@@ -207,8 +205,8 @@ void restore_signals()
 #ifdef SIGQUIT
 #else
 #endif
-#endif
 }
+
 
 
 

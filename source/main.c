@@ -79,15 +79,8 @@
 #else
 #endif
 
-#endif
 char *getenv();
 
-#endif
-#else
-#else  /* other BSD versions */
-#endif
-#endif
-#endif
 
 void perror();
 
@@ -97,14 +90,10 @@ void exit();
 */
 
 
-#else
-#endif
 
-#if defined(LINT_ARGS)
-#endif
-#else
-#endif
-#endif
+static void char_inven_init(void);
+static void init_m_level(void);
+static void init_t_level(void);
 
 /* Initialize, restore, and get the ball rolling.       -RAK-   */
 int main(argc, argv)
@@ -373,5 +362,6 @@ static void init_t_level()
 
 #if (COST_ADJ != 100)
 #endif
+
 
 

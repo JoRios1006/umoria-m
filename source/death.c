@@ -20,51 +20,23 @@
 
 /* Must read this before externs.h, as some global declarations use FILE. */
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <fcntl.h>
+#include <pwd.h>
+#include <sys/file.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <time.h>
 
 #include "config.h"
 #include "constant.h"
 #include "types.h"
-
-#ifdef Pyramid
-#else
-#endif
-
-#include <ctype.h>
-
-
-#include <pwd.h>
-
-#else
-#else
-#else  /* other BSD versions */
-#endif
-#endif
-#endif
-#endif
-#endif
-
-#include <string.h>
-#include <fcntl.h>
-
-/* This must be included after fcntl.h, which has a prototype for `open'
-   on some systems.  Otherwise, the `open' prototype conflicts with the
-   `topen' declaration.  */
 #include "externs.h"
 
-long lseek();
-
-#ifndef L_SET
-#endif
-#ifndef L_INCR
-#endif
-
-void exit ();
-
-#if defined(LINT_ARGS)
-#endif
-
-
-long time();
+#define L_SET  SEEK_SET
+#define L_INCR SEEK_CUR
 
 static void date(day)
 char *day;
@@ -93,57 +65,6 @@ char *in_str;
 
 
 
-#include <sys/stat.h>
-#include <errno.h>
-
-/* The following code is provided especially for systems which          -CJS-
-   have no flock system call. It has never been tested.         */
-
-/* DEBIAN_LINUX defined because fcntlbits.h defines EX and SH the       -RJW-
- * other way.  The comment below indicates that they're not
- * distinguished anyways, so this should be harmless, and this does
- * seem to be the prevailing order (c.f. IRIX 6.5) but just in case,
- * they've been ifdef'ed. */
-
-#define LOCK_SH 1
-#define LOCK_EX 2
-#define LOCK_NB 4
-#define LOCK_UN 8
-
-/* An flock HACK.  LOCK_SH and LOCK_EX are not distinguished.  DO NOT release
-   a lock which you failed to set!  ALWAYS release a lock you set! */
-static int flock(f, l)
-int f, l;
-{
-  struct stat sbuf;
-  char lockname[80];
-
-  if (fstat (f, &sbuf) < 0)
-    return -1;
-  (void) sprintf (lockname, "/tmp/moria.%ld", sbuf.st_ino);
-  if (l & LOCK_UN)
-    return unlink(lockname);
-
-  while (open (lockname, O_WRONLY|O_CREAT|O_EXCL, 0644) < 0)
-    {
-      if (errno != EEXIST)
-        return -1;
-      if (stat(lockname, &sbuf) < 0)
-        return -1;
-      /* Locks which last more than 10 seconds get deleted. */
-      if (time((long *)0) - sbuf.st_mtime > 10)
-        {
-          if (unlink(lockname) < 0)
-            return -1;
-        }
-      else if (l & LOCK_NB)
-        return -1;
-      else
-        (void) sleep(1);
-    }
-  return 0;
-}
-
 void display_scores(show_player)
 int show_player;
 {
@@ -154,7 +75,6 @@ int show_player;
   int8u version_maj, version_min, patch_level;
   int16 player_uid;
 
-#endif
 
   (void) fseek(highscore_fp, (long)0, L_SET);
 
@@ -179,8 +99,6 @@ umoria.");
     }
 
   player_uid = getuid ();
-#else
-#endif
 
   /* set the static fileptr in save.c to the highscore file pointer */
   set_fileptr(highscore_fp);
@@ -229,7 +147,6 @@ int duplicate_character ()
   int8u version_maj, version_min, patch_level;
   int16 player_uid;
 
-#endif
 
   (void) fseek(highscore_fp, (long)0, L_SET);
 
@@ -257,8 +174,6 @@ umoria.");
   set_fileptr(highscore_fp);
 
   player_uid = getuid ();
-#else
-#endif
 
   rd_highscore(&score);
   while (!feof(highscore_fp))
@@ -425,8 +340,6 @@ are not saved.");
   new_entry.points = total_points();
   new_entry.birth_date = birth_date;
   new_entry.uid = getuid();
-#else
-#endif
   new_entry.mhp = py.misc.mhp;
   new_entry.chp = py.misc.chp;
   new_entry.dun_level = dun_level;
@@ -453,8 +366,6 @@ are not saved.");
   /*  First, get a lock on the high score file so no-one else tries */
   /*  to write to it while we are using it, on VMS and IBMPCs only one
       process can have the file open at a time, so we just open it here */
-#else
-#endif
   if (0 != flock((int)fileno(highscore_fp), LOCK_EX))
     {
       msg_print("Error gaining lock for score file");
@@ -570,8 +481,6 @@ are not saved.");
         }
     }
 
-#else
-#endif
 }
 
 
@@ -649,5 +558,6 @@ void exit_game ()
   restore_term ();
   exit (0);
 }
+
 
 

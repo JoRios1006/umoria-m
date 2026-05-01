@@ -29,26 +29,14 @@
 #if defined(NLS) && defined(lint)
 #endif
 
-#else
-#endif
-#else	/* GEMDOS i.e. Atari ST */
-#else
-#endif
-#endif
 
 
 #include <ctype.h>
 
 
-#endif
-#endif
 
 
 #if 0
-#endif
-#endif
-#endif /* 0 */
-#else
 #endif
 
 #include <stdlib.h>
@@ -66,17 +54,17 @@
 #include <curses.h>
 
 
-/* Fooling lint. Unfortunately, c defines all the TIO.	  -CJS-
+/* Fooling lint. Unfortunately, c defines all the TIO.    -CJS-
    constants to be long, and lint expects them to be int. Also,
    ioctl is sometimes called with just two arguments. The
    following definition keeps lint happy. It may need to be
-   reset for different systems.	 */
+   reset for different systems.  */
 #ifdef lint
 #else
 #endif
-#endif
 
 #define use_value
+#define use_value2
 
 
 
@@ -86,16 +74,13 @@ void exit();
 unsigned sleep();
 
 
-#else
-#endif
-#endif
-#endif
 
 static int curses_on = FALSE;
-static WINDOW *savescr;		/* Spare window for saving the screen. -CJS-*/
+static WINDOW *savescr;         /* Spare window for saving the screen. -CJS-*/
+static struct termios save_termio;
 
 
-/* suspend()							   -CJS-
+/* suspend()                                                       -CJS-
    Handle the stop and start signals. This ensures that the log
    is up to date, and that the terminal is fully reset and
    restored.  */
@@ -103,8 +88,6 @@ int suspend()
 {
   /* for USG systems with BSDisms that have SIGTSTP defined, but don't
      actually implement it */
-#endif
-#endif
   return 0;
 }
 
@@ -114,24 +97,18 @@ void init_curses()
   int i, y, x;
 
 
-#endif
-#endif
 
   /* PC curses returns ERR */
+  if (initscr() == NULL)
     {
       (void) printf("Error allocating screen in curses package.\n");
       exit(1);
     }
-  if (LINES < 24 || COLS < 80)	 /* Check we have enough screen. -CJS- */
+  if (LINES < 24 || COLS < 80)   /* Check we have enough screen. -CJS- */
     {
       (void) printf("Screen too small for moria.\n");
       exit (1);
     }
-#ifdef  __386BSD__
-#else
-#else
-#endif
-#endif
   if (((savescr = newwin (0, 0, 0, 0)) == NULL)
     )
     {
@@ -146,28 +123,19 @@ void init_curses()
 #endif
 }
 
-/* Set up the terminal into a suitable state for moria.	 -CJS- */
+/* Set up the terminal into a suitable state for moria.  -CJS- */
 void moriaterm()
 {
-#else
-#endif
-#endif
-#endif
-
+  (void) tcgetattr(0, &save_termio);
   curses_on = TRUE;
   use_value crmode();
-#else
-#endif
   use_value noecho();
   /* can not use nonl(), because some curses do not handle it correctly */
-#else
-#endif
-#endif
 
 }
 
 
-/* Dump IO to buffer					-RAK-	*/
+/* Dump IO to buffer                                    -RAK-   */
 void put_buffer(out_str, row, col)
 char *out_str;
 int row, col;
@@ -187,7 +155,7 @@ int row, col;
       /* clear msg_flag to avoid problems with unflushed messages */
       msg_flag = 0;
       (void) sprintf(tmp_str, "error in put_buffer, row = %d col = %d\n",
-		     row, col);
+                     row, col);
       prt(tmp_str, 0, 0);
       bell();
       /* wait so user can see error */
@@ -196,14 +164,14 @@ int row, col;
 }
 
 
-/* Dump the IO buffer to terminal			-RAK-	*/
+/* Dump the IO buffer to terminal                       -RAK-   */
 void put_qio()
 {
-  screen_change = TRUE;	   /* Let inven_command know something has changed. */
+  screen_change = TRUE;    /* Let inven_command know something has changed. */
   (void) refresh();
 }
 
-/* Put the terminal in the original mode.			   -CJS- */
+/* Put the terminal in the original mode.                          -CJS- */
 void restore_term()
 {
 
@@ -217,58 +185,64 @@ void restore_term()
   endwin();  /* exit curses */
   (void) fflush (stdout);
   /* restore the saved values of the special chars */
-#endif
-#endif
   curses_on = FALSE;
 }
 
 
 void shell_out()
-
 {
-#endif
+  struct termios tbuf;
+  int val;
+  char *str;
 
   save_screen();
-  /* clear screen and print 'exit' message */
   clear_screen();
+  put_buffer("[Entering shell, type 'exit' to resume your game.]\n", 0, 0);
   put_qio();
 
-  /* would call nl() here if could use nl()/nonl(), see moriaterm() */
+  (void) tcgetattr(0, &tbuf);
   use_value nocrmode();
-#else
-#endif
   use_value echo();
   ignore_signals();
+
+  val = fork();
+  if (val == 0)
+    {
       default_signals();
-      /* close scoreboard descriptor */
-      /* it is not open on MSDOS machines */
+      (void) tcsetattr(0, TCSANOW, &save_termio);
       (void) fclose(highscore_fp);
-      if (str = getenv("SHELL"))
+      if ((str = getenv("SHELL")) != NULL)
+        (void) execl(str, str, (char *) 0);
       else
+        (void) execl("/bin/sh", "sh", (char *) 0);
       msg_print("Cannot execute shell.");
-#endif /* ATARI_ST */
+      exit(1);
+    }
+  if (val == -1)
+    {
+      msg_print("Fork failed. Try again.");
+      restore_signals();
+      return;
+    }
+  (void) wait((int *) 0);
+
   restore_signals();
-  /* restore the cave to the screen */
   restore_screen();
   use_value crmode();
-#else
-#endif
   use_value noecho();
-  /* would call nonl() here if could use nl()/nonl(), see moriaterm() */
-  /* disable all of the local special characters except the suspend char */
-  /* have to disable ^Y for tunneling */
+  (void) tcsetattr(0, TCSANOW, &tbuf);
   (void) wrefresh(curscr);
 }
 
-/* Returns a single character input from the terminal.	This silently -CJS-
+/* Returns a single character input from the terminal.  This silently -CJS-
    consumes ^R to redraw the screen and reset the terminal, so that this
    operation can always be performed at any input prompt.  inkey() never
-   returns ^R.	*/
+   returns ^R.  */
 char inkey()
 {
   int i;
 
-  put_qio();			/* Dump IO buffer		*/
+  put_qio();                    /* Dump IO buffer               */
   command_count = 0;  /* Just to be safe -CJS- */
   while (TRUE)
     {
@@ -277,32 +251,32 @@ char inkey()
 
       /* some machines may not sign extend. */
       if (i == EOF)
-	{
-	  eof_flag++;
-	  /* avoid infinite loops while trying to call inkey() for a -more-
-	     prompt. */
-	  msg_flag = FALSE;
+        {
+          eof_flag++;
+          /* avoid infinite loops while trying to call inkey() for a -more-
+             prompt. */
+          msg_flag = FALSE;
 
-	  (void) refresh ();
-	  if (!character_generated || character_saved)
-	    exit_game();
-	  disturb(1, 0);
-	  if (eof_flag > 100)
-	    {
-	      /* just in case, to make sure that the process eventually dies */
-	      panic_save = 1;
-	      (void) strcpy(died_from, "(end of input: panic saved)");
-	      if (!save_char())
-		{
-		  (void) strcpy(died_from, "panic: unexpected eof");
-		  death = TRUE;
-		}
-	      exit_game();
-	    }
-	  return ESCAPE;
-	}
+          (void) refresh ();
+          if (!character_generated || character_saved)
+            exit_game();
+          disturb(1, 0);
+          if (eof_flag > 100)
+            {
+              /* just in case, to make sure that the process eventually dies */
+              panic_save = 1;
+              (void) strcpy(died_from, "(end of input: panic saved)");
+              if (!save_char())
+                {
+                  (void) strcpy(died_from, "panic: unexpected eof");
+                  death = TRUE;
+                }
+              exit_game();
+            }
+          return ESCAPE;
+        }
       if (i != CTRL('R'))
-	return (char)i;
+        return (char)i;
       (void) wrefresh (curscr);
       moriaterm();
     }
@@ -311,7 +285,7 @@ char inkey()
 
 
 
-/* Flush the buffer					-RAK-	*/
+/* Flush the buffer                                     -RAK-   */
 void flush()
 {
   /* the code originally used ioctls, TIOCDRAIN, or TIOCGETP/TIOCSETP, or
@@ -326,7 +300,7 @@ void flush()
 }
 
 
-/* Clears given line of text				-RAK-	*/
+/* Clears given line of text                            -RAK-   */
 void erase_line(row, col)
 int row;
 int col;
@@ -354,7 +328,7 @@ int row;
 }
 
 
-/* Outputs a char to a given interpolated y, x position	-RAK-	*/
+/* Outputs a char to a given interpolated y, x position -RAK-   */
 /* sign bit of a character used to indicate standout mode. -CJS */
 void print(ch, row, col)
 char ch;
@@ -371,7 +345,7 @@ int col;
       /* clear msg_flag to avoid problems with unflushed messages */
       msg_flag = 0;
       (void) sprintf(tmp_str, "error in print, row = %d col = %d\n",
-		     row, col);
+                     row, col);
       prt(tmp_str, 0, 0);
       bell ();
       /* wait so user can see error */
@@ -380,7 +354,7 @@ int col;
 }
 
 
-/* Moves the cursor to a given interpolated y, x position	-RAK-	*/
+/* Moves the cursor to a given interpolated y, x position       -RAK-   */
 void move_cursor_relative(row, col)
 int row;
 int col;
@@ -395,8 +369,8 @@ int col;
       /* clear msg_flag to avoid problems with unflushed messages */
       msg_flag = 0;
       (void) sprintf(tmp_str,
-		     "error in move_cursor_relative, row = %d col = %d\n",
-		     row, col);
+                     "error in move_cursor_relative, row = %d col = %d\n",
+                     row, col);
       prt(tmp_str, 0, 0);
       bell();
       /* wait so user can see error */
@@ -417,7 +391,7 @@ char *p;
 }
 
 
-/* Outputs a line to a given y, x position		-RAK-	*/
+/* Outputs a line to a given y, x position              -RAK-   */
 void prt(str_buff, row, col)
 char *str_buff;
 int row;
@@ -439,8 +413,8 @@ int row, col;
 }
 
 
-/* Outputs message to top line of screen				*/
-/* These messages are kept for later reference.	 */
+/* Outputs message to top line of screen                                */
+/* These messages are kept for later reference.  */
 void msg_print(str_buff)
 char *str_buff;
 {
@@ -453,32 +427,32 @@ char *str_buff;
       old_len = strlen(old_msg[last_msg]) + 1;
 
       /* If the new message and the old message are short enough, we want
-	 display them together on the same line.  So we don't flush the old
-	 message in this case.  */
-	 
+         display them together on the same line.  So we don't flush the old
+         message in this case.  */
+         
       if (str_buff)
-	new_len = strlen (str_buff);
+        new_len = strlen (str_buff);
       else
-	new_len = 0;
+        new_len = 0;
 
       if (! str_buff || (new_len + old_len + 2 >= 73))
-	{
-	  /* ensure that the complete -more- message is visible. */
-	  if (old_len > 73)
-	    old_len = 73;
-	  put_buffer(" -more-", MSG_LINE, old_len);
-	  /* let sigint handler know that we are waiting for a space */
-	  wait_for_more = 1;
-	  do
-	    {
-	      in_char = inkey();
-	    }
-	  while ((in_char != ' ') && (in_char != ESCAPE) && (in_char != '\n')
-		 && (in_char != '\r'));
-	  wait_for_more = 0;
-	}
+        {
+          /* ensure that the complete -more- message is visible. */
+          if (old_len > 73)
+            old_len = 73;
+          put_buffer(" -more-", MSG_LINE, old_len);
+          /* let sigint handler know that we are waiting for a space */
+          wait_for_more = 1;
+          do
+            {
+              in_char = inkey();
+            }
+          while ((in_char != ' ') && (in_char != ESCAPE) && (in_char != '\n')
+                 && (in_char != '\r'));
+          wait_for_more = 0;
+        }
       else
-	combine_messages = TRUE;
+        combine_messages = TRUE;
     }
 
   if (! combine_messages)
@@ -494,23 +468,23 @@ char *str_buff;
       msg_flag = TRUE;
 
       /* If the new message and the old message are short enough, display
-	 them on the same line.  */
+         them on the same line.  */
       
       if (combine_messages)
-	{
-	  put_buffer (str_buff, MSG_LINE, old_len + 2);
-	  strcat (old_msg[last_msg], "  ");
-	  strcat (old_msg[last_msg], str_buff);
-	}
+        {
+          put_buffer (str_buff, MSG_LINE, old_len + 2);
+          strcat (old_msg[last_msg], "  ");
+          strcat (old_msg[last_msg], str_buff);
+        }
       else
-	{
-	  put_buffer(str_buff, MSG_LINE, 0);
-	  last_msg++;
-	  if (last_msg >= MAX_SAVE_MSG)
-	    last_msg = 0;
-	  (void) strncpy(old_msg[last_msg], str_buff, VTYPESIZ);
-	  old_msg[last_msg][VTYPESIZ - 1] = '\0';
-	}
+        {
+          put_buffer(str_buff, MSG_LINE, 0);
+          last_msg++;
+          if (last_msg >= MAX_SAVE_MSG)
+            last_msg = 0;
+          (void) strncpy(old_msg[last_msg], str_buff, VTYPESIZ);
+          old_msg[last_msg][VTYPESIZ - 1] = '\0';
+        }
     }
   else
     msg_flag = FALSE;
@@ -546,8 +520,8 @@ char *prompt;
     return FALSE;
 }
 
-/* Prompts (optional) and returns ord value of input char	*/
-/* Function returns false if <ESCAPE> is input	*/
+/* Prompts (optional) and returns ord value of input char       */
+/* Function returns false if <ESCAPE> is input  */
 int get_com(prompt, command)
 char *prompt;
 char *command;
@@ -567,8 +541,8 @@ char *command;
 
 
 
-/* Gets a string terminated by <RETURN>		*/
-/* Function returns false if <ESCAPE> is input	*/
+/* Gets a string terminated by <RETURN>         */
+/* Function returns false if <ESCAPE> is input  */
 int get_string(in_str, row, column, slen)
 char *in_str;
 int row, column, slen;
@@ -578,7 +552,7 @@ int row, column, slen;
   int flag, aborted;
 
   aborted = FALSE;
-  flag	= FALSE;
+  flag  = FALSE;
   (void) move(row, column);
   for (i = slen; i > 0; i--)
     (void) addch(' ');
@@ -595,38 +569,38 @@ int row, column, slen;
     {
       i = inkey();
       switch(i)
-	{
-	case ESCAPE:
-	  aborted = TRUE;
-	  break;
-	case CTRL('J'): case CTRL('M'):
-	  flag	= TRUE;
-	  break;
-	case DELETE: case CTRL('H'):
-	  if (column > start_col)
-	    {
-	      column--;
-	      put_buffer(" ", row, column);
-	      move_cursor(row, column);
-	      *--p = '\0';
-	    }
-	  break;
-	default:
-	  if (!isprint(i) || column > end_col)
-	    bell();
-	  else
-	    {
-	      use_value2 mvaddch(row, column, (char)i);
-	      *p++ = i;
-	      column++;
-	    }
-	  break;
-	}
+        {
+        case ESCAPE:
+          aborted = TRUE;
+          break;
+        case CTRL('J'): case CTRL('M'):
+          flag  = TRUE;
+          break;
+        case DELETE: case CTRL('H'):
+          if (column > start_col)
+            {
+              column--;
+              put_buffer(" ", row, column);
+              move_cursor(row, column);
+              *--p = '\0';
+            }
+          break;
+        default:
+          if (!isprint(i) || column > end_col)
+            bell();
+          else
+            {
+              use_value2 mvaddch(row, column, (char)i);
+              *p++ = i;
+              column++;
+            }
+          break;
+        }
     }
   while ((!flag) && (!aborted));
   if (aborted)
     return(FALSE);
-  /* Remove trailing blanks	*/
+  /* Remove trailing blanks     */
   while (p > in_str && p[-1] == ' ')
     p--;
   *p = '\0';
@@ -634,7 +608,7 @@ int row, column, slen;
 }
 
 
-/* Pauses for user response before returning		-RAK-	*/
+/* Pauses for user response before returning            -RAK-   */
 void pause_line(prt_line)
 int prt_line;
 {
@@ -644,9 +618,9 @@ int prt_line;
 }
 
 
-/* Pauses for user response before returning		-RAK-	*/
-/* NOTE: Delay is for players trying to roll up "perfect"	*/
-/*	characters.  Make them wait a bit.			*/
+/* Pauses for user response before returning            -RAK-   */
+/* NOTE: Delay is for players trying to roll up "perfect"       */
+/*      characters.  Make them wait a bit.                      */
 void pause_exit(prt_line, delay)
 int prt_line;
 int delay;
@@ -688,27 +662,25 @@ void bell()
 
 /* definitions used by screen_map() */
 /* index into border character array */
-#define TL 0	/* top left */
+#define TL 0    /* top left */
 #define TR 1
 #define BL 2
 #define BR 3
-#define HE 4	/* horizontal edge */
+#define HE 4    /* horizontal edge */
 #define VE 5
 
 /* character set to use */
-# else
-# endif
-#   define CH(x)	(screen_border[0][x])
+#   define CH(x)        (screen_border[0][x])
 
   /* Display highest priority object in the RATIO by RATIO area */
-#define	RATIO 3
+#define RATIO 3
 
 void screen_map()
 {
-  register int	i, j;
+  register int  i, j;
   static int8u screen_border[2][6] = {
-    {'+', '+', '+', '+', '-', '|'},	/* normal chars */
-    {201, 187, 200, 188, 205, 186}	/* graphics chars */
+    {'+', '+', '+', '+', '-', '|'},     /* normal chars */
+    {201, 187, 200, 188, 205, 186}      /* graphics chars */
   };
   int8u map[MAX_WIDTH / RATIO + 1];
   int8u tmp;
@@ -737,31 +709,31 @@ void screen_map()
     {
       row = i / RATIO;
       if (row != orow)
-	{
-	  if (orow >= 0)
-	    {
-	      /* can not use mvprintw() on ibmpc, because PC-Curses is horribly
-		 written, and mvprintw() causes the fp emulation library to be
-		 linked with PC-Moria, makes the program 10K bigger */
-	      (void) sprintf(prntscrnbuf,"%c%s%c",CH(VE), map, CH(VE));
-	      use_value2 mvaddstr(orow+1, 0, prntscrnbuf);
-	    }
-	  for (j = 0; j < MAX_WIDTH / RATIO; j++)
-	    map[j] = ' ';
-	  orow = row;
-	}
+        {
+          if (orow >= 0)
+            {
+              /* can not use mvprintw() on ibmpc, because PC-Curses is horribly
+                 written, and mvprintw() causes the fp emulation library to be
+                 linked with PC-Moria, makes the program 10K bigger */
+              (void) sprintf(prntscrnbuf,"%c%s%c",CH(VE), map, CH(VE));
+              use_value2 mvaddstr(orow+1, 0, prntscrnbuf);
+            }
+          for (j = 0; j < MAX_WIDTH / RATIO; j++)
+            map[j] = ' ';
+          orow = row;
+        }
       for (j = 0; j < MAX_WIDTH; j++)
-	{
-	  col = j / RATIO;
-	  tmp = loc_symbol(i, j);
-	  if (priority[map[col]] < priority[tmp])
-	    map[col] = tmp;
-	  if (map[col] == '@')
-	    {
-	      mycol = col + 1; /* account for border */
-	      myrow = row + 1;
-	    }
-	}
+        {
+          col = j / RATIO;
+          tmp = loc_symbol(i, j);
+          if (priority[map[col]] < priority[tmp])
+            map[col] = tmp;
+          if (map[col] == '@')
+            {
+              mycol = col + 1; /* account for border */
+              myrow = row + 1;
+            }
+        }
     }
   if (orow >= 0)
     {
@@ -779,5 +751,6 @@ void screen_map()
   (void) inkey();
   restore_screen();
 }
+
 
 

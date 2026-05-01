@@ -71,9 +71,7 @@ void place_gold(y, x)
 int y, x;
 {
   register int i, cur_pos;
-#ifdef M_XENIX
-#else
-#endif
+  register inven_type *t_ptr;
 
   cur_pos = popt();
   i = ((randint(dun_level+2)+2) / 2) - 1;
@@ -2048,7 +2046,6 @@ char *object_str, *mtc_str, *insert;
 #if 0
 #else
 #endif
-#endif
 
 void insert_lnum(object_str, mtc_str, number, show_sign)
 char *object_str;
@@ -2393,5 +2390,6 @@ int dis;
   creatures(FALSE);
   teleport_flag = FALSE;
 }
+
 
 

@@ -25,6 +25,8 @@
 #include "types.h"
 #include "externs.h"
 
+static void roff(register char *p);
+
 #if defined(LINT_ARGS)
 #else
 #endif

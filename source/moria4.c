@@ -31,6 +31,9 @@
 #include <ctype.h>
 
 
+static int look_ray(int y, int from, int to);
+static int look_see(int x, int y, int *transparent);
+
 #if defined(LINT_ARGS)
 #else
 #endif
