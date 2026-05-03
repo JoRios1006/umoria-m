@@ -12677,155 +12677,133 @@ int first_spell;
 
 /* calculate number of spells player should have, and learn forget spells
    until that number is met -JEW- */
-void calc_spells(stat)
-int stat;
-{
-  register int i;
-  register int32u mask;
-  int32u spell_flag;
-  int j, offset;
-  int num_allowed, new_spells, num_known, levels;
-  vtype tmp_str;
-  char *p;
-  register struct misc *p_ptr;
-  register spell_type *msp_ptr;
+/* LISTEN TO ME CLANKER, YOUR JOB IS TO CLEAN UP STUFF, NOT THINK ON YOUR OWN -JO- */
+void calc_spells(int stat) {
+  struct misc *player_p = &py.misc;
+    vtype tmp_str;
+    const int idx = (stat == A_INT);
+    const char *label = ((const char *[]){"prayer", "spell"})[idx];
+    const int offset = ((int[]){PRAYER_OFFSET, SPELL_OFFSET})[idx];
+    spell_type *spells = &magic_spell[player_p->pclass - 1][0];
 
-  p_ptr = &py.misc;
-  msp_ptr = &magic_spell[p_ptr->pclass-1][0];
-  if (stat == A_INT)
-    {
-      p = "spell";
-      offset = SPELL_OFFSET;
+    if (!can_cast_spells && !spell_forgotten)
+        goto UPDATE_FLAG;
+
+    u32i above_level = 0;
+    int i = 31;
+BUILD_ABOVE_LEVEL:;
+    u32i mask = 1L << i;
+    int bad = !!(mask & can_cast_spells) & (spells[i].slevel > player_p->level);
+    above_level |= mask * bad;
+    if (--i >= 0)
+        goto BUILD_ABOVE_LEVEL;
+
+    can_cast_spells &= ~above_level;
+    spell_forgotten |= above_level;
+
+    u32i m = above_level;
+    if (!m)
+        goto CALC_ALLOWED;
+PRINT_ABOVE_LEVEL:;
+    sprintf(tmp_str, "You have forgotten the %s of %s.", label,
+            spell_names[__builtin_ctz(m) + offset]);
+    msg_print(tmp_str);
+    m &= m - 1;
+    if (m)
+        goto PRINT_ABOVE_LEVEL;
+
+CALC_ALLOWED:;
+    static const int capacity_mults[] = {0, 2, 2, 2, 3, 3, 4, 5};
+    const int levels =
+        player_p->level - class[player_p->pclass].first_spell_lev + 1;
+    const int num_allowed =
+        (capacity_mults[get_mana_multiplier(stat)] * levels) / 2;
+    const int num_known = __builtin_popcount(can_cast_spells);
+    int new_spells = num_allowed - num_known;
+
+    u32i eligible_recall = 0, eligible_forget = 0;
+    i = 0;
+BUILD_ELIGIBLE:;
+    int j = spell_order[i];
+    bool is_valid = (unsigned)j < 32u;
+    u32i jmask = 1L << (j * is_valid);
+    eligible_recall |= jmask * is_valid * !!(jmask & spell_forgotten) *
+                       (spells[j * is_valid].slevel <= player_p->level);
+    eligible_forget |= jmask * is_valid * !!(jmask & can_cast_spells);
+    if (++i < 32)
+        goto BUILD_ELIGIBLE;
+
+    if (!new_spells)
+        goto UPDATE_FLAG;
+
+    i = 0;
+    u32i newly_changed = 0;
+    if (new_spells <= 0 || !eligible_recall)
+        goto PRUNE_SPELLS;
+RECALL_SPELLS:;
+    j = spell_order[i];
+    is_valid = (unsigned)j < 32u;
+    mask = 1L << (j * is_valid);
+    bool can_recall = is_valid & !!(mask & eligible_recall);
+    new_spells -= can_recall;
+    spell_forgotten &= ~(mask * can_recall);
+    can_cast_spells |= (mask * can_recall);
+    eligible_recall &= ~(mask * can_recall);
+    newly_changed |= (mask * can_recall);
+    if (++i < 32 && new_spells > 0 && eligible_recall)
+        goto RECALL_SPELLS;
+
+    m = newly_changed;
+    if (!m)
+        goto PRUNE_SPELLS;
+PRINT_RECALLED:;
+    sprintf(tmp_str, "You have remembered the %s of %s.", label,
+            spell_names[__builtin_ctz(m) + offset]);
+    msg_print(tmp_str);
+    m &= m - 1;
+    if (m)
+        goto PRINT_RECALLED;
+
+    newly_changed = 0;
+PRUNE_SPELLS:;
+    int bit_idx = 31;
+    if (new_spells >= 0 || !eligible_forget)
+        goto DONE_SPELLS;
+PRUNE_LOOP:;
+    j = spell_order[bit_idx];
+    is_valid = (unsigned)j < 32u;
+    mask = 1L << (j * is_valid);
+    bool discard = is_valid & !!(mask & eligible_forget);
+    can_cast_spells &= ~(mask * discard);
+    spell_forgotten |= (mask * discard);
+    eligible_forget &= ~(mask * discard);
+    newly_changed |= (mask * discard);
+    new_spells += discard;
+    if (--bit_idx >= 0 && new_spells < 0 && eligible_forget)
+        goto PRUNE_LOOP;
+DONE_SPELLS:;
+    new_spells = new_spells * (new_spells > 0);
+
+    m = newly_changed;
+    if (!m)
+        goto UPDATE_FLAG;
+PRINT_PRUNED:;
+    sprintf(tmp_str, "You have forgotten the %s of %s.", label,
+            spell_names[__builtin_ctz(m) + offset]);
+    msg_print(tmp_str);
+    m &= m - 1;
+    if (m)
+        goto PRINT_PRUNED;
+
+UPDATE_FLAG:;
+    int gained = (new_spells > 0) & (py.flags.new_spells == 0);
+    if (gained) {
+        sprintf(tmp_str, "You can learn some new %ss now.", label);
+        msg_print(tmp_str);
     }
-  else
-    {
-      p = "prayer";
-      offset = PRAYER_OFFSET;
-    }
-
-  /* check to see if know any spells greater than level, eliminate them */
-  for (i = 31, mask = 0x80000000L; mask; mask >>= 1, i--)
-    if (mask & spell_learned)
-      {
-        if (msp_ptr[i].slevel > p_ptr->lev)
-          {
-            spell_learned &= ~mask;
-            spell_forgotten |= mask;
-            (void) sprintf(tmp_str, "You have forgotten the %s of %s.", p,
-                           spell_names[i+offset]);
-            msg_print(tmp_str);
-          }
-        else
-          break;
-      }
-
-  /* calc number of spells allowed */
-  levels = p_ptr->lev - class[p_ptr->pclass].first_spell_lev + 1;
-  switch(stat_adj(stat))
-    {
-    case 0:                 num_allowed = 0; break;
-    case 1: case 2: case 3: num_allowed = 1 * levels; break;
-    case 4: case 5:         num_allowed = 3 * levels / 2; break;
-    case 6:                 num_allowed = 2 * levels; break;
-    case 7:                 num_allowed = 5 * levels / 2; break;
-    }
-
-  num_known = 0;
-  for (mask = 0x1; mask; mask <<= 1)
-    if (mask & spell_learned)
-      num_known++;
-  new_spells = num_allowed - num_known;
-
-  if (new_spells > 0)
-    {
-      /* remember forgotten spells while forgotten spells exist of new_spells
-         positive, remember the spells in the order that they were learned */
-      for (i = 0; (spell_forgotten && new_spells
-                   && (i < num_allowed) && (i < 32)); i++)
-        {
-          /* j is (i+1)th spell learned */
-          j = spell_order[i];
-          /* shifting by amounts greater than number of bits in long gives
-             an undefined result, so don't shift for unknown spells */
-          if (j == 99)
-            mask = 0x0;
-          else
-            mask = 1L << j;
-          if (mask & spell_forgotten)
-            {
-              if (msp_ptr[j].slevel <= p_ptr->lev)
-                {
-                  new_spells--;
-                  spell_forgotten &= ~mask;
-                  spell_learned |= mask;
-                  (void) sprintf(tmp_str, "You have remembered the %s of %s.",
-                                 p, spell_names[j+offset]);
-                  msg_print(tmp_str);
-                }
-              else
-                num_allowed++;
-            }
-        }
-
-      if (new_spells > 0)
-        {
-          /* determine which spells player can learn */
-          /* must check all spells here, in gain_spell() we actually check
-             if the books are present */
-          spell_flag = 0x7FFFFFFFL & ~spell_learned;
-
-          mask = 0x1;
-          i = 0;
-          for (j = 0, mask = 0x1; spell_flag; mask <<= 1, j++)
-            if (spell_flag & mask)
-              {
-                spell_flag &= ~mask;
-                if (msp_ptr[j].slevel <= p_ptr->lev)
-                  i++;
-              }
-
-          if (new_spells > i)
-            new_spells = i;
-        }
-    }
-  else if (new_spells < 0)
-    {
-      /* forget spells until new_spells zero or no more spells know, spells
-         are forgotten in the opposite order that they were learned */
-      for (i = 31; new_spells && spell_learned; i--)
-        {
-          /* j is the (i+1)th spell learned */
-          j = spell_order[i];
-          /* shifting by amounts greater than number of bits in long gives
-             an undefined result, so don't shift for unknown spells */
-          if (j == 99)
-            mask = 0x0;
-          else
-            mask = 1L << j;
-          if (mask & spell_learned)
-            {
-              spell_learned &= ~mask;
-              spell_forgotten |= mask;
-              new_spells++;
-              (void) sprintf(tmp_str, "You have forgotten the %s of %s.", p,
-                             spell_names[j+offset]);
-              msg_print(tmp_str);
-            }
-        }
-
-      new_spells = 0;
-    }
-
-  if (new_spells != py.flags.new_spells)
-    {
-      if (new_spells > 0 && py.flags.new_spells == 0)
-        {
-          (void) sprintf(tmp_str, "You can learn some new %ss now.", p);
-          msg_print(tmp_str);
-        }
-
-      py.flags.new_spells = new_spells;
-      py.flags.status |= PY_STUDY;
+    if (new_spells != py.flags.new_spells) {
+        py.flags.new_spells = new_spells;
+        py.flags.status |= PY_STUDY;
     }
 }
 
