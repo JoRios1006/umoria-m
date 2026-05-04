@@ -12962,60 +12962,40 @@ void gain_spells()
 
 
 /* Gain some mana if you know at least one spell        -RAK-   */
-void calc_mana(stat)
-int stat;
-{
-  register int new_mana, levels;
-  register struct misc *p_ptr;
-  register int32 value;
+/* CLANKER DO NOT CHANGE THIS*/
+void calc_mana(int stat){
+	struct misc *player_p = &py.misc;
 
-  p_ptr = &py.misc;
-  if (spell_learned != 0)
-    {
-      levels = p_ptr->lev - class[p_ptr->pclass].first_spell_lev + 1;
-      switch(stat_adj(stat))
-        {
-        case 0: new_mana = 0; break;
-        case 1: case 2: new_mana = 1 * levels; break;
-        case 3: new_mana = 3 * levels / 2; break;
-        case 4: new_mana = 2 * levels; break;
-        case 5: new_mana = 5 * levels / 2; break;
-        case 6: new_mana = 3 * levels; break;
-        case 7: new_mana = 4 * levels; break;
+    if (!can_cast_spells) {
+        if (player_p->max_mana != 0) {
+            player_p->max_mana = 0;
+            player_p->int_mana = 0;
+            py.flags.status |= PY_MANA;
         }
-      /* increment mana by one, so that first level chars have 2 mana */
-      if (new_mana > 0)
-        new_mana++;
+        return;
+    }
 
-      /* mana can be zero when creating character */
-      if (p_ptr->mana != new_mana)
-        {
-          if (p_ptr->mana != 0)
-            {
-              /* change current mana proportionately to change of max mana,
-                 divide first to avoid overflow, little loss of accuracy */
-              value = (((long)p_ptr->cmana << 16) + p_ptr->cmana_frac)
-                / p_ptr->mana * new_mana;
-              p_ptr->cmana = value >> 16;
-              p_ptr->cmana_frac = value & 0xFFFF;
-            }
-          else
-            {
-              p_ptr->cmana = new_mana;
-              p_ptr->cmana_frac = 0;
-            }
-          p_ptr->mana = new_mana;
-          /* can't print mana here, may be in store or inventory mode */
-          py.flags.status |= PY_MANA;
-        }
+    const int LEVELS =
+        player_p->level - class[player_p->pclass].first_spell_lev + 1;
+    const int MULTIPLIER = get_mana_multiplier(stat);
+    const int new_mana = (MULTIPLIER > 0) * ((MULTIPLIER + 1) * LEVELS / 2 + 1);
+
+    if (player_p->max_mana == new_mana)
+        return;
+
+    if (player_p->max_mana) {
+        int32 scaled_fixed_mana =
+            (((long)player_p->int_mana << 16) + player_p->frac_mana) *
+            new_mana / player_p->max_mana;
+        player_p->int_mana = scaled_fixed_mana >> 16;
+        player_p->frac_mana = scaled_fixed_mana & 0xFFFF;
+    } else {
+        player_p->int_mana = new_mana;
+        player_p->frac_mana = 0;
     }
-  else if (p_ptr->mana != 0)
-    {
-      p_ptr->mana = 0;
-      p_ptr->cmana = 0;
-      /* can't print mana here, may be in store or inventory mode */
-      py.flags.status |= PY_MANA;
-    }
+
+    player_p->max_mana = new_mana;
+    py.flags.status |= PY_MANA;
 }
 
 
